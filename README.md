@@ -57,7 +57,7 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 
 ## 📊 How MacBroom compares
 
-A focused comparison on the things MacBroom is built for. We don't list features we don't have — if you need malware scanning, a disk treemap or a menu-bar widget, a full native app fits better.
+A focused comparison on what MacBroom is built for: safe, open-source, scriptable everyday cleanup.
 
 |  | **MacBroom** | CleanMyMac | Pearcleaner | Mole |
 |---|:---:|:---:|:---:|:---:|
