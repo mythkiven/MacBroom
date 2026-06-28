@@ -1,12 +1,18 @@
 <div align="center">
 
-# 🧽 MacBroom
+# 🧹 MacBroom
 
-**安全、可视化、零依赖的 macOS 磁盘清理工具**
+**开源 macOS 清理工具 · 安全、可视化地释放磁盘空间**
 
-扫描可释放的空间 → 按软件分组 → 勾选一键清理。所有删除默认移入「废纸篓」，可一键还原。
+一个 **CleanMyMac 的开源替代品**：扫描可释放空间 → 按软件分组 → 勾选一键清理。所有删除默认移入「废纸篓」，可一键还原。纯本地、零依赖、不联网。
 
 简体中文 · [English](./README.en.md)
+
+[![CI](https://github.com/mythkiven/MacBroom/actions/workflows/ci.yml/badge.svg)](https://github.com/mythkiven/MacBroom/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
 </div>
 
@@ -53,8 +59,8 @@ macbroom                   # 启动并自动打开浏览器
 ### 方式二：免安装直跑（克隆源码）
 
 ```bash
-git clone https://github.com/your-org/macbroom.git
-cd macbroom
+git clone https://github.com/mythkiven/MacBroom.git
+cd MacBroom
 ./run.sh
 # 或： python -m macbroom
 ```

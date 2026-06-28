@@ -1,12 +1,18 @@
 <div align="center">
 
-# 🧽 MacBroom
+# 🧹 MacBroom
 
-**A safe, visual, zero-dependency macOS disk cleanup tool**
+**Open-source macOS cleaner — free up disk space safely**
 
-Scan reclaimable space → group it by app → tick and clean. Deletions go to the Trash by default and can be restored.
+An **open-source CleanMyMac alternative**: scan reclaimable space → group it by app → tick and clean. Deletions go to the Trash by default and can be restored. Local-only, zero-dependency, no telemetry.
 
 [简体中文](./README.md) · English
+
+[![CI](https://github.com/mythkiven/MacBroom/actions/workflows/ci.yml/badge.svg)](https://github.com/mythkiven/MacBroom/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
 </div>
 
@@ -53,8 +59,8 @@ macbroom                   # starts and opens the browser
 ### Option B: run from source (no install)
 
 ```bash
-git clone https://github.com/your-org/macbroom.git
-cd macbroom
+git clone https://github.com/mythkiven/MacBroom.git
+cd MacBroom
 ./run.sh                   # or: python -m macbroom
 ```
 
