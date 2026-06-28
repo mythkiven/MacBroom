@@ -76,22 +76,20 @@
 
 ## 🚀 使用
 
-### 方式一：免安装直跑（当前即可用，克隆源码）
+### 方式一：pipx / pip 安装（推荐）
+
+```bash
+pipx install macbroom      # 或： pip install macbroom
+macbroom                   # 启动并自动打开浏览器
+```
+
+### 方式二：免安装直跑（克隆源码）
 
 ```bash
 git clone https://github.com/mythkiven/MacBroom.git
 cd MacBroom
 ./run.sh
 # 或： python -m macbroom
-```
-
-### 方式二：pipx / pip 安装
-
-> 将随首个正式版本发布到 PyPI；在此之前请用方式一。
-
-```bash
-pipx install macbroom      # 或： pip install macbroom
-macbroom                   # 启动并自动打开浏览器
 ```
 
 浏览器会自动打开 `http://127.0.0.1:37700`。点击「开始扫描」，勾选后点「清理选中项」即可。

@@ -76,21 +76,19 @@ In short: **other cleaners delete first and apologize later. MacBroom is designe
 
 ## 🚀 Usage
 
-### Option A: run from source (works today, no install)
+### Option A: pipx / pip (recommended)
+
+```bash
+pipx install macbroom      # or: pip install macbroom
+macbroom                   # starts and opens the browser
+```
+
+### Option B: run from source (no install)
 
 ```bash
 git clone https://github.com/mythkiven/MacBroom.git
 cd MacBroom
 ./run.sh                   # or: python -m macbroom
-```
-
-### Option B: pipx / pip
-
-> Published to PyPI with the first tagged release. Until then, use Option A.
-
-```bash
-pipx install macbroom      # or: pip install macbroom
-macbroom                   # starts and opens the browser
 ```
 
 The browser opens at `http://127.0.0.1:37700`. Click "Start Scan", then "Clean Selected".
