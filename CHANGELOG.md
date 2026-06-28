@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+
+- **In-app activity log viewer**: review recent scans and deletions inside the app (Settings → View activity log), backed by a new `/api/activity` endpoint and `audit.tail()`.
+
 ## [1.1.1] - 2026-06-28
 
 ### Fixed

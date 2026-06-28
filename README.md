@@ -31,7 +31,7 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 - **Explainable leftovers**: each suspected uninstall leftover shows *why* it was flagged (bundle id with no matching app) and can be **expanded to inspect the actual files** before you decide.
 - **Confirm before delete (dry-run)**: the dialog lists every selected item with its path and reason, total count and reclaimable size; large totals (>10 GB) or risky selections get an extra warning.
 - **Sort & drill-down**: sort results by size or name, expand any group or item to see what is inside.
-- **Audit log**: every scan and deletion is written to `~/Library/Logs/MacBroom/macbroom.log` (override the directory with `MACBROOM_LOG_DIR`).
+- **Audit log + in-app viewer**: every scan and deletion is written to `~/Library/Logs/MacBroom/macbroom.log` (override with `MACBROOM_LOG_DIR`), and you can review recent activity right inside the app (Settings → View activity log).
 - **Grouped by app**: caches and the like are grouped per app; your selection is preserved across rescans.
 - **Customizable**: toggle each scan category on/off; a persistent **exclusion list** for false positives; long scans are **cancelable**.
 - **iCloud-aware**: detects iCloud-synced folders to avoid breaking cross-device sync.
@@ -71,6 +71,7 @@ A focused comparison on what MacBroom is built for: safe, open-source, scriptabl
 | **Risk grading + risky hidden** | ✅ | ➖ | ➖ | ❌ |
 | **Dry-run per-item confirm** | ✅ | ➖ | ✅ | ➖ |
 | **Audit log** | ✅ | ❌ | ➖ | ❌ |
+| **In-app activity log viewer** | ✅ | ➖ | ❌ | ❌ |
 | **iCloud-sync aware** | ✅ | ➖ | ❌ | ❌ |
 | **Persistent exclusion list** | ✅ | ➖ | ✅ | ❌ |
 | **App cache cleanup** | ✅ | ✅ | ➖ | ✅ |
