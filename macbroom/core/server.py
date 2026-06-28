@@ -118,6 +118,17 @@ class Handler(BaseHTTPRequestHandler):
             key = (qs.get("key") or [""])[0]
             return self._handle_scan(key, lang)
 
+        if route == "/api/activity":
+            try:
+                limit = int((qs.get("limit") or ["200"])[0])
+            except (TypeError, ValueError):
+                limit = 200
+            limit = max(1, min(limit, 1000))
+            return self._send_json({
+                "path": audit.log_path(),
+                "entries": audit.tail(limit),
+            })
+
         self.send_error(404)
 
     def do_POST(self):

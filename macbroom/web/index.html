@@ -88,9 +88,30 @@
         <h4 class="settings-subhead" data-i18n="excludedTitle">排除清单</h4>
         <p class="settings-hint" data-i18n="excludedHint">被排除的项不会被扫描或删除。常用于排除误判项。</p>
         <div id="excluded-list"></div>
+        <h4 class="settings-subhead" data-i18n="activityTitle">活动日志</h4>
+        <p class="settings-hint" data-i18n="activityHint">查看本工具在本机执行过的扫描与删除记录，全部存于本地。</p>
+        <button class="btn" id="activity-open" data-i18n="activityOpen">查看活动日志</button>
       </div>
       <div class="modal-foot">
         <button class="btn btn-primary" id="settings-done" data-i18n="done">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 活动日志查看器 -->
+  <div class="modal-mask" id="activity-mask">
+    <div class="modal modal-wide">
+      <div class="modal-head">
+        <h3 data-i18n="activityTitle">活动日志</h3>
+        <button class="modal-close" id="activity-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="settings-hint"><span data-i18n="activityFile">日志文件</span>：<code id="activity-path">—</code></p>
+        <div id="activity-list"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="activity-refresh" data-i18n="activityRefresh">刷新</button>
+        <button class="btn btn-primary" id="activity-done" data-i18n="done">完成</button>
       </div>
     </div>
   </div>

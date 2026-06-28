@@ -44,6 +44,19 @@ const I18N = {
     removeExclude: "移除",
     excludedToast: "已加入排除清单（重扫不再出现）",
     unexcludedToast: "已移出排除清单（下次扫描会重新出现）",
+    activityTitle: "活动日志",
+    activityHint: "查看本工具在本机执行过的扫描与删除记录，全部存于本地。",
+    activityOpen: "查看活动日志",
+    activityFile: "日志文件",
+    activityRefresh: "刷新",
+    activityLoading: "加载中…",
+    activityEmpty: "暂无活动记录。扫描或清理后这里会出现日志。",
+    activityFail: "读取日志失败：{err}",
+    actScan: "扫描",
+    actDelete: "删除",
+    activityOk: "成功",
+    activityFailTag: "失败",
+    activityCount: "{n} 项",
     emptyTitle: "点击「开始扫描」",
     emptyBody: "MacBroom 会在本机检测可释放的空间，全部操作仅在本地完成，默认移入废纸篓可还原。",
     selectedPrefix: "已选",
@@ -105,6 +118,19 @@ const I18N = {
     excludedHint: "Excluded items are never scanned or deleted. Useful for false positives.",
     excludedEmpty: "No exclusions yet. Click “Exclude” on any scanned item to add it.",
     removeExclude: "Remove",
+    activityTitle: "Activity Log",
+    activityHint: "Review the scans and deletions this tool performed on this Mac — all stored locally.",
+    activityOpen: "View activity log",
+    activityFile: "Log file",
+    activityRefresh: "Refresh",
+    activityLoading: "Loading…",
+    activityEmpty: "No activity yet. Scans and cleanups will show up here.",
+    activityFail: "Failed to read log: {err}",
+    actScan: "Scan",
+    actDelete: "Delete",
+    activityOk: "OK",
+    activityFailTag: "Failed",
+    activityCount: "{n} items",
     excludedToast: "Added to exclusion list (won't appear on rescan)",
     unexcludedToast: "Removed from exclusion list (will reappear on next scan)",
     emptyTitle: "Click “Start Scan”",
@@ -224,6 +250,10 @@ async function init() {
   $("#settings-btn").addEventListener("click", openSettings);
   $("#settings-close").addEventListener("click", closeSettings);
   $("#settings-done").addEventListener("click", closeSettings);
+  $("#activity-open").addEventListener("click", openActivity);
+  $("#activity-close").addEventListener("click", closeActivity);
+  $("#activity-done").addEventListener("click", closeActivity);
+  $("#activity-refresh").addEventListener("click", loadActivity);
 }
 
 function loadEnabledRaw() {
@@ -790,6 +820,67 @@ function renderExcludedList() {
 }
 
 function closeSettings() { $("#settings-mask").classList.remove("show"); }
+
+function openActivity() {
+  $("#activity-mask").classList.add("show");
+  loadActivity();
+}
+
+function closeActivity() { $("#activity-mask").classList.remove("show"); }
+
+// 审计事件 → 可读标签
+const ACTIVITY_LABELS = {
+  scan: "actScan",
+  cli_scan: "actScan",
+  delete: "actDelete",
+};
+
+async function loadActivity() {
+  const box = $("#activity-list");
+  box.innerHTML = `<div class="excluded-empty">${esc(t("activityLoading"))}</div>`;
+  let data;
+  try {
+    const res = await fetch("/api/activity?limit=200");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    data = await res.json();
+  } catch (e) {
+    box.innerHTML = `<div class="excluded-empty">${esc(t("activityFail", { err: String((e && e.message) || e) }))}</div>`;
+    return;
+  }
+  $("#activity-path").textContent = data.path || "—";
+  const entries = Array.isArray(data.entries) ? data.entries : [];
+  if (!entries.length) {
+    box.innerHTML = `<div class="excluded-empty">${esc(t("activityEmpty"))}</div>`;
+    return;
+  }
+  box.innerHTML = "";
+  entries.forEach((en) => {
+    const labelKey = ACTIVITY_LABELS[en.event];
+    const action = labelKey ? t(labelKey) : esc(en.event || "—");
+    const okTag = en.event === "delete"
+      ? (en.ok ? `<span class="tag risk-safe">${t("activityOk")}</span>`
+               : `<span class="tag manual">${t("activityFailTag")}</span>`)
+      : "";
+    const detailParts = [];
+    if (en.category) detailParts.push(esc(en.category));
+    if (en.name) detailParts.push(esc(en.name));
+    if (typeof en.count === "number") detailParts.push(t("activityCount", { n: en.count }));
+    if (typeof en.total_size === "number" && en.total_size > 0) detailParts.push(humanSize(en.total_size));
+    if (typeof en.size === "number" && en.size > 0) detailParts.push(humanSize(en.size));
+    const pathLine = en.path
+      ? `<div class="rpath">${esc(String(en.path).replace(/^.*\/Users\/[^/]+/, "~"))}</div>` : "";
+    const errLine = en.error
+      ? `<div class="rnote" style="color:var(--red)">${esc(en.error)}</div>` : "";
+    const row = el("div", "activity-row");
+    row.innerHTML = `<div class="act-time">${esc(en.ts || "")}</div>
+      <div class="act-main">
+        <div class="act-head"><span class="act-event act-${esc(en.event || "")}">${action}</span>${okTag}
+          <span class="act-detail">${detailParts.join(" · ")}</span></div>
+        ${pathLine}${errLine}
+      </div>`;
+    box.appendChild(row);
+  });
+}
 
 function ensurePanel(key) {
   let p = document.querySelector(`.panel[data-key="${key}"]`);

@@ -245,6 +245,36 @@ class AuditTests(unittest.TestCase):
         self.assertEqual(line["category"], "caches")
 
 
+class ActivityLogTests(unittest.TestCase):
+    def test_tail_returns_recent_entries_newest_first(self):
+        import importlib
+        import os
+
+        with TemporaryDirectory() as tmp:
+            with mock.patch.dict(os.environ, {"MACBROOM_LOG_DIR": tmp}):
+                from macbroom.core import audit
+                importlib.reload(audit)
+                audit.record("scan", category="caches", count=2)
+                audit.record("delete", id="x", name="Foo", ok=True)
+                entries = audit.tail(10)
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(entries[0]["event"], "delete")  # 最新在前
+        self.assertEqual(entries[1]["event"], "scan")
+
+    def test_tail_handles_missing_file_and_limit(self):
+        import importlib
+        import os
+
+        with TemporaryDirectory() as tmp:
+            with mock.patch.dict(os.environ, {"MACBROOM_LOG_DIR": tmp}):
+                from macbroom.core import audit
+                importlib.reload(audit)
+                self.assertEqual(audit.tail(), [])  # 文件不存在
+                for i in range(5):
+                    audit.record("scan", n=i)
+                self.assertEqual(len(audit.tail(3)), 3)  # 受 limit 截断
+
+
 class ProtectedPathTests(unittest.TestCase):
     def test_blocks_system_and_secret_prefixes(self):
         import os

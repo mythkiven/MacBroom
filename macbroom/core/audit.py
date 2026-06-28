@@ -45,6 +45,31 @@ def _rotate_if_needed(path: str) -> None:
         pass
 
 
+def tail(limit: int = 200) -> list[dict]:
+    """读取最近 ``limit`` 条审计记录（最新在前），供应用内日志查看器展示。
+
+    只读当前日志文件（不含已轮转的 .1），坏行跳过，不抛异常。
+    """
+    path = log_path()
+    try:
+        with _LOCK, open(path, encoding="utf-8") as f:
+            lines = f.readlines()
+    except OSError:
+        return []
+    out: list[dict] = []
+    for raw in reversed(lines):
+        raw = raw.strip()
+        if not raw:
+            continue
+        try:
+            out.append(json.loads(raw))
+        except json.JSONDecodeError:
+            continue
+        if len(out) >= limit:
+            break
+    return out
+
+
 def record(event: str, **fields) -> None:
     """追加一条结构化日志。失败时静默（日志不应影响主流程）。"""
     line = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "event": event}
