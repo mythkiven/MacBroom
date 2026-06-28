@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Editable install
+        run: python -m pip install -e .
+      - name: Compile all modules
+        run: python -m compileall macbroom
+      - name: Run tests
+        env:
+          # 隔离审计日志到临时目录，绝不写真实用户目录
+          MACBROOM_LOG_DIR: ${{ runner.temp }}/macbroom-logs
+        run: python -m unittest discover -s tests -v
+
+  smoke-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Editable install
+        run: python -m pip install -e .
+      - name: Start server and hit the API
+        env:
+          MACBROOM_LOG_DIR: ${{ runner.temp }}/macbroom-logs
+        run: |
+          macbroom --no-open --port 37700 &
+          SERVER_PID=$!
+          sleep 3
+          curl -sf "http://127.0.0.1:37700/api/categories?lang=en" > /dev/null
+          # 无 CSRF token 的删除必须被拒绝（403）
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:37700/api/delete -d '{"ids":[]}')
+          test "$code" = "403"
+          kill $SERVER_PID
