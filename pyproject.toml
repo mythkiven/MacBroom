@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macbroom"
+version = "0.1.0"
+description = "Safe, visual, zero-dependency macOS disk cleanup tool with a local web UI"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "MacBroom contributors" }]
+keywords = ["macos", "cleaner", "disk-cleanup", "cache", "diskspace", "uninstaller", "xcode", "developer-tools"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+]
+# 仅依赖 Python 3 标准库，运行时无任何第三方依赖。
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/your-org/macbroom"
+Repository = "https://github.com/your-org/macbroom"
+Issues = "https://github.com/your-org/macbroom/issues"
+
+[project.scripts]
+macbroom = "macbroom.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["macbroom*"]
+
+[tool.setuptools.package-data]
+macbroom = ["web/*.html", "web/*.css", "web/*.js"]
