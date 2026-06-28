@@ -1,0 +1,1 @@
+"""MacBroom core package."""
