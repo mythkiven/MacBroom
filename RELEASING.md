@@ -33,7 +33,7 @@ workflow 已声明 `environment: pypi`，配不配保护都能跑，配了更稳
 1. 改版本号（两处必须一致，CI 会校验标签 == pyproject 版本）：
    - `pyproject.toml` 的 `version`
    - `macbroom/__init__.py` 的 `__version__`
-2. 更新 `更新日志.md`（或 CHANGELOG），写清本次变化。
+2. 更新 [CHANGELOG.md](CHANGELOG.md)，写清本次用户可见的变化。
 3. 提交并推送 `main`。
 4. 打标签并推送（**这一步触发发布**）：
    ```bash
