@@ -6,17 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-06-28
+
 ### Fixed
 
 - **Trash deletion security**: file paths are passed to AppleScript via `argv` instead of string interpolation, so names containing `"` no longer break deletion or pose an injection risk.
+- **Delete API validation**: rejects non-list or non-string `ids` in the delete payload (`400 invalid ids`).
+- **Protected paths**: expanded hard blocks for `/Applications`, `/private/etc`, and `/private/var` (via `realpath`), plus existing system and secret prefixes.
+- **Trash failure fallback**: no longer suggests `rm -rf` / `sudo rm -rf`; shows a manual Finder hint instead (aligned with “Trash-by-default, not dangerous”).
+- **Login items**: relative `BundleProgram` paths (e.g. `Contents/MacOS/App`) are no longer mis-flagged as orphaned startup items.
+- **App index**: discovers `.app` bundles in nested folders (e.g. Setapp / vendor subdirectories), reducing false leftover reports.
+- **Duplicate files**: the “keep newest” copy in each group is no longer selectable for deletion (`deletable: false` in UI).
 - **Web UI delete errors**: failed delete requests (CSRF, HTTP errors, malformed responses) now show a toast instead of failing silently.
-- Manual fallback `rm` commands use proper shell quoting (`shlex.quote`).
 - Delete API returns `400` for malformed `Content-Length` headers instead of `500`.
+- Scan / categories API calls check `res.ok` before parsing JSON.
 
 ### Changed
 
-- README (EN/ZH): login-items wording now matches behavior (user-level → Trash; system-level → manual `sudo` command).
-- Internal maintainer planning docs removed from the public repository (kept locally only).
+- README (EN/ZH): competitor narrative uses “user feedback on pain points” (no mention of issue mining); removed the Telemetry comparison row (we do not track that dimension).
+- README (EN/ZH): login-items wording matches behavior (user-level → Trash; system-level → manual `sudo` command).
+- CLI warns when binding to a non-loopback host (LAN exposure risk).
+- Repository SEO: GitHub homepage → PyPI; Discussions enabled; removed misleading `daisydisk` topic; added `docs/social-preview.png` (1280×640, upload manually under Settings → Social preview).
+
+### Added
+
+- Unit tests for protected paths, delete `ids` validation, login-item relative paths, nested app indexing, duplicate keep-item `deletable`, and safe trash fallback (19 tests total).
 
 ## [1.1.0] - 2026-06-28
 
@@ -42,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Safety model: Trash-by-default, protected-path blocks, risk grading (risky items hidden by default), dry-run confirmation, audit log, iCloud awareness, cancelable scans, exclusion list.
 - Pure Python 3 standard library — zero runtime dependencies.
 
-[Unreleased]: https://github.com/mythkiven/MacBroom/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/mythkiven/MacBroom/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/mythkiven/MacBroom/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mythkiven/MacBroom/releases/tag/v1.1.0
 [1.0.0]: https://github.com/mythkiven/MacBroom/releases/tag/v1.0.0
