@@ -63,7 +63,6 @@ A focused comparison on the things MacBroom is built for. We don't list features
 |---|:---:|:---:|:---:|:---:|
 | **Price** | Free | $39.95/yr | Free | Free |
 | **Open source** | ✅ MIT | ❌ | ✅ Fair-code | ✅ MIT |
-| **Telemetry** | ❌ None | ⚠️ Yes | ❌ None | ❌ None |
 | **Runtime deps** | ✅ Python 3 stdlib · zero deps | Closed | Native | Native |
 | **Install** | ✅ `pip`/`pipx` one-liner | DMG | DMG / brew | brew |
 | **Interface** | Local web UI + CLI | Native app | Native app | Command line |
@@ -84,7 +83,7 @@ A focused comparison on the things MacBroom is built for. We don't list features
 
 ## 💡 Why MacBroom? — built from real cleaner failures
 
-We read **hundreds of issues across popular open-source Mac cleaners** and designed MacBroom to *not* repeat their most painful, real, reported accidents:
+We collected **a large amount of user feedback on pain points with rival cleaners** and designed MacBroom to *not* repeat their most painful, real, reported accidents:
 
 | Real-world failure reported in other cleaners | How MacBroom avoids it by design |
 |---|---|
