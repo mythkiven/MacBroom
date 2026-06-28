@@ -127,10 +127,13 @@ class DuplicatesScannerTests(unittest.TestCase):
                 items = dup.scan("en")
 
         self.assertEqual(len(items), 3)  # 仅 3 个重复副本，unique 不计入
-        keep_notes = [it for it in items if "keep" in it.note.lower()]
-        self.assertEqual(len(keep_notes), 1)
+        keep_items = [it for it in items if "keep" in it.note.lower()]
+        self.assertEqual(len(keep_items), 1)
         for it in items:
             self.assertEqual(it.risk, "risky")
+        # 「保留项」必须不可勾选删除，其余副本可删
+        self.assertFalse(keep_items[0].deletable)
+        self.assertEqual(sum(1 for it in items if it.deletable), 2)
 
 
 class FsutilTests(unittest.TestCase):
@@ -190,7 +193,8 @@ class TrashTests(unittest.TestCase):
         self.assertNotIn(evil, script)
         self.assertNotIn("do shell script", script)
 
-    def test_manual_fallback_command_is_shell_quoted(self):
+    def test_failed_trash_never_returns_destructive_command(self):
+        """删除失败时坚持「不强删」：不得返回 rm -rf 等不可逆命令，只给手动引导。"""
         import os
         import macbroom.core.trash as trash
 
@@ -204,11 +208,13 @@ class TrashTests(unittest.TestCase):
                 with mock.patch.object(trash.os, "access", lambda *a, **k: False):
                     r = trash.trash_path(evil)
             self.assertFalse(r["ok"])
-            self.assertIn("sudo rm -rf ", r["command"])
-            # 命令必须可被 shell 安全解析回原始路径
-            import shlex
-            parts = shlex.split(r["command"])
-            self.assertEqual(parts[-1], evil)
+            # 绝不生成 rm / rm -rf 这类不可逆命令
+            self.assertEqual(r.get("command", ""), "")
+            self.assertNotIn("rm -rf", str(r))
+            self.assertNotIn("rm ", str(r.get("command", "")))
+            # 父目录不可写时标记需管理员权限，并给出手动引导
+            self.assertTrue(r["needs_sudo"])
+            self.assertTrue(r.get("hint"))
         finally:
             os.remove(evil)
 
@@ -237,6 +243,76 @@ class AuditTests(unittest.TestCase):
                     line = json.loads(f.readline())
         self.assertEqual(line["event"], "scan")
         self.assertEqual(line["category"], "caches")
+
+
+class ProtectedPathTests(unittest.TestCase):
+    def test_blocks_system_and_secret_prefixes(self):
+        import os
+        from macbroom.core.fsutil import HOME, is_protected
+
+        self.assertTrue(is_protected("/System/Library/Foo"))
+        self.assertTrue(is_protected("/usr/local/bin/x"))
+        self.assertTrue(is_protected("/Applications/Safari.app"))
+        # /etc、/var 会被 realpath 解析到 /private 下，仍应命中
+        self.assertTrue(is_protected("/private/var/db/anything"))
+        self.assertTrue(is_protected(os.path.join(HOME, ".ssh", "id_rsa")))
+        self.assertTrue(is_protected(os.path.join(HOME, "Library", "Keychains", "x")))
+
+    def test_allows_ordinary_user_paths(self):
+        import os
+        from macbroom.core.fsutil import HOME, is_protected
+
+        # 普通可清理路径（用户缓存目录下的某项）不应被保护拦截。
+        self.assertFalse(is_protected(os.path.join(HOME, "Library", "Caches", "com.macbroom.test-xyz")))
+        self.assertFalse(is_protected(os.path.join(HOME, "Downloads", "big.zip")))
+
+
+class LoginItemsExecutableTests(unittest.TestCase):
+    def test_relative_bundleprogram_not_flagged_as_orphan(self):
+        from macbroom.scanners.login_items import _executable_exists
+
+        # BundleProgram 常是相对 bundle 的路径，无法定位 → 不得判为孤儿（不删）
+        self.assertTrue(_executable_exists("Contents/MacOS/Helper"))
+        # 系统前缀始终存在
+        self.assertTrue(_executable_exists("/usr/bin/true"))
+        # 绝对且不存在的路径 → 判为孤儿
+        self.assertFalse(_executable_exists("/Applications/NopeNope.app/Contents/MacOS/Nope"))
+
+
+class AppIndexRecursiveTests(unittest.TestCase):
+    def test_discovers_apps_in_subdirectories(self):
+        import os
+        import macbroom.scanners.appindex as appindex
+
+        def make_app(root, rel, bundle_id):
+            app = os.path.join(root, rel)
+            os.makedirs(os.path.join(app, "Contents"))
+            import plistlib
+            with open(os.path.join(app, "Contents", "Info.plist"), "wb") as f:
+                plistlib.dump({"CFBundleIdentifier": bundle_id}, f)
+
+        with TemporaryDirectory() as tmp:
+            make_app(tmp, "Top.app", "com.example.top")
+            make_app(tmp, "Setapp/Nested.app", "com.example.nested")
+            with mock.patch.object(appindex, "APP_DIRS", [tmp]):
+                appindex._cache = None
+                try:
+                    self.assertTrue(appindex.is_installed_bundle("com.example.top"))
+                    self.assertTrue(appindex.is_installed_bundle("com.example.nested"))
+                finally:
+                    appindex._cache = None
+
+
+class ServerValidationTests(unittest.TestCase):
+    def test_valid_ids_accepts_only_string_lists(self):
+        from macbroom.core.server import valid_ids
+
+        self.assertTrue(valid_ids([]))
+        self.assertTrue(valid_ids(["a", "b"]))
+        self.assertFalse(valid_ids("abc"))      # 字符串会被按字符迭代
+        self.assertFalse(valid_ids([1, 2]))     # 非字符串元素
+        self.assertFalse(valid_ids({"a": 1}))   # dict
+        self.assertFalse(valid_ids(None))
 
 
 if __name__ == "__main__":

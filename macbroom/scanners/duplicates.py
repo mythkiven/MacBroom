@@ -128,6 +128,7 @@ def scan(lang: str = "zh") -> list[ScanItem]:
                 mtime=path_mtime(p),
                 note=note,
                 recommend=False,
+                deletable=not is_keep,  # 保留项（每组最新一份）禁止勾选删除
                 risk=RISK_RISKY,
             ))
     return items

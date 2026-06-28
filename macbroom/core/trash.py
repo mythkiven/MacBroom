@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import os
-import shlex
 import subprocess
 
 from .fsutil import is_protected
@@ -65,16 +64,16 @@ def trash_path(path: str) -> dict:
         result["ok"] = True
         return result
 
-    # 失败：多半是权限问题。给出手动命令，绝不自动提权。
+    # 失败：多半是权限问题。坚持「默认可还原、不强删」——绝不替用户生成
+    # `rm -rf` 这类不可逆命令，也不自动提权，改为引导用户自行在「访达」处理。
     result["error"] = err or "移动到废纸篓失败"
-    if "not allowed" in err.lower() or "permission" in err.lower() or os.geteuid() != 0:
-        # 判定是否大概率需要 sudo
-        parent = os.path.dirname(path)
-        if not os.access(parent, os.W_OK):
-            result["needs_sudo"] = True
-            result["command"] = f"sudo rm -rf {shlex.quote(path)}"
-    if not result["command"]:
-        result["command"] = f"rm -rf {shlex.quote(path)}"
+    parent = os.path.dirname(path)
+    if not os.access(parent, os.W_OK):
+        result["needs_sudo"] = True
+    result["hint"] = (
+        "MacBroom 不会替你执行不可逆删除。可在「访达」中定位该路径并手动移入废纸篓；"
+        "若位于系统 / 管理员目录，请确认确有必要后自行处理。"
+    )
     return result
 
 

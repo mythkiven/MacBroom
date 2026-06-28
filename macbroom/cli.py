@@ -31,7 +31,16 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 37700  # 已在端口登记表登记
 
 
+_LOOPBACK_HOSTS = ("127.0.0.1", "localhost", "::1")
+
+
 def _run_serve(args: argparse.Namespace) -> None:
+    if args.host not in _LOOPBACK_HOSTS:
+        print(
+            f"⚠️  警告：绑定到 {args.host} 会把扫描/删除接口暴露到本机以外，"
+            "同一网络内的其他设备可访问页面、拿到 CSRF token 并发起删除。\n"
+            "    仅在可信网络且确有需要时使用；默认请用 127.0.0.1。"
+        )
     if not args.no_open:
         url = f"http://{args.host}:{args.port}"
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()

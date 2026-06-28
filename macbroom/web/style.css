@@ -214,6 +214,7 @@ body {
 .tag.run { background: rgba(var(--accent-rgb), .15); color: var(--accent); }
 .tag.manual { background: rgba(var(--orange-rgb), .15); color: var(--orange); }
 .tag.sudo { background: rgba(var(--red-rgb), .15); color: var(--red); }
+.tag.keep { background: rgba(var(--green-rgb), .14); color: var(--green); }
 .tag.risk-safe { background: rgba(var(--green-rgb), .14); color: var(--green); }
 .tag.risk-moderate { background: rgba(var(--orange-rgb), .14); color: var(--orange); }
 .tag.risk-risky { background: rgba(var(--red-rgb), .16); color: var(--red); }
@@ -249,6 +250,8 @@ body {
 .cb:hover { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), .12); }
 .cb.checked { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-color: transparent; box-shadow: 0 2px 8px rgba(var(--accent-rgb), .4); }
 .cb.checked::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 800; }
+.cb.disabled { cursor: not-allowed; opacity: .35; background: rgba(0, 0, 0, .15); border-style: dashed; pointer-events: none; }
+.cb.disabled:hover { border-color: var(--line); box-shadow: none; }
 
 .loading, .panel-empty { padding: 48px; text-align: center; color: var(--text-faint); font-size: 14px; }
 .spinner { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }

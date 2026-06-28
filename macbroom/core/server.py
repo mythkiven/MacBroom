@@ -42,6 +42,15 @@ _CONTENT_TYPES = {
 }
 
 
+def valid_ids(raw) -> bool:
+    """删除接口的 ids 必须是字符串列表，否则拒绝。
+
+    防御异常/恶意 body：若传入字符串会被按字符迭代、传入 dict 会迭代 key，
+    都会产生无意义的删除查询；这里统一在入口拒绝。
+    """
+    return isinstance(raw, list) and all(isinstance(i, str) for i in raw)
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "MacBroom"
 
@@ -127,7 +136,10 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:
             return self._send_json({"error": "invalid json"}, 400)
-        return self._handle_delete(payload.get("ids", []))
+        ids = payload.get("ids", [])
+        if not valid_ids(ids):
+            return self._send_json({"error": "invalid ids"}, 400)
+        return self._handle_delete(ids)
 
     def _request_lang(self, qs: dict) -> str:
         lang = (qs.get("lang") or [""])[0]

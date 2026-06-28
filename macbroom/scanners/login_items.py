@@ -54,8 +54,13 @@ def _target_executable(data: dict) -> str | None:
 def _executable_exists(target: str) -> bool:
     if target.startswith(_ALWAYS_OK_PREFIXES):
         return True
+    expanded = os.path.expanduser(target)
+    if os.path.isabs(expanded):
+        return os.path.exists(expanded)
     if "/" in target:
-        return os.path.exists(os.path.expanduser(target))
+        # 相对路径（如 BundleProgram = "Contents/MacOS/App"，相对其 bundle）。
+        # 本扫描器拿不到对应 bundle，无法可靠定位——保守起见不判为孤儿，避免误报。
+        return True
     # 仅是命令名：在 PATH 里找
     return shutil.which(target) is not None
 

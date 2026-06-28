@@ -31,12 +31,16 @@ def is_icloud_path(path: str) -> bool:
 
 
 # 绝不触碰的路径前缀（即便扫描到也不允许作为删除项）。
+# 注意：is_protected 用 realpath 比对，故这里写「真实路径」前缀——
+# 例如 /etc、/var 会被 realpath 解析为 /private/etc、/private/var，需以后者登记。
 PROTECTED_PREFIXES = (
     "/System",
     "/usr",
     "/bin",
     "/sbin",
-    "/private/var/db",
+    "/Applications",       # 已安装 App：扫描器从不经废纸篓删整个 App，加一道硬阻断
+    "/private/etc",        # /etc 的真实路径
+    "/private/var",        # /var 的真实路径（含 db / 系统状态），扫描器不在此清理
     "/Library/Apple",
     os.path.join(HOME, "Library", "Keychains"),
     os.path.join(HOME, ".ssh"),

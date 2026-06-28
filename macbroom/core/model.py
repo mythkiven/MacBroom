@@ -37,6 +37,7 @@ class ScanItem:
     command: Optional[str] = None       # run / manual 动作的命令
     note: str = ""                      # 说明：为什么可删 / 风险提示
     recommend: bool = False             # 是否默认勾选（仅明确安全项为 True）
+    deletable: bool = True              # 是否允许被勾选删除（如重复组「保留项」为 False）
     needs_sudo: bool = False            # 是否已知需要管理员权限
     risk: str = RISK_MODERATE           # 风险等级，见 RISK_*
     mtime: float = 0.0                  # 最近修改时间（秒）

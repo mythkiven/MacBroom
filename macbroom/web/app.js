@@ -61,6 +61,7 @@ const I18N = {
     tagRun: "命令",
     tagManual: "手动",
     tagSudo: "需 sudo",
+    tagKeep: "保留",
     riskSafe: "安全",
     riskModerate: "中等",
     riskRisky: "高风险",
@@ -123,6 +124,7 @@ const I18N = {
     tagRun: "Command",
     tagManual: "Manual",
     tagSudo: "sudo",
+    tagKeep: "Keep",
     riskSafe: "Safe",
     riskModerate: "Moderate",
     riskRisky: "Risky",
@@ -313,6 +315,11 @@ function isVisible(it) {
   return state.showRisky || it.risk !== "risky";
 }
 
+// 是否允许勾选删除（如重复组的「保留项」服务端标 deletable=false）。
+function isDeletable(it) {
+  return it.deletable !== false;
+}
+
 function visibleItems(list) {
   return list.filter(isVisible);
 }
@@ -328,6 +335,10 @@ function applyLanguage() {
 
 async function loadCategories() {
   const res = await fetch("/api/categories?" + langQuery());
+  if (!res.ok) {
+    toast(t("scanFail", { err: "HTTP " + res.status }));
+    return;
+  }
   state.categories = await res.json();
   resolveEnabled();
   renderTabs();
@@ -447,6 +458,7 @@ async function scanCategory(key) {
   try {
     const opts = state.abort ? { signal: state.abort.signal } : {};
     const res = await fetch("/api/scan?key=" + encodeURIComponent(key) + "&" + langQuery(), opts);
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     // 过滤用户排除清单中的项：不计入结果、不可被勾选删除。
     if (Array.isArray(data.items)) {
@@ -543,8 +555,9 @@ function renderPanel(key) {
     // 组全选
     ghead.querySelector(".cb").addEventListener("click", (e) => {
       e.stopPropagation();
-      const allSel = list.every((it) => state.selected.has(it.id));
-      list.forEach((it) => allSel ? state.selected.delete(it.id) : state.selected.add(it.id));
+      const sel = list.filter(isDeletable);
+      const allSel = sel.length && sel.every((it) => state.selected.has(it.id));
+      sel.forEach((it) => allSel ? state.selected.delete(it.id) : state.selected.add(it.id));
       renderPanel(key);
       updateActionbar();
     });
@@ -577,9 +590,12 @@ function renderRow(it) {
   const hasChildren = Array.isArray(it.children) && it.children.length > 0;
   const expandBtn = hasChildren
     ? `<button type="button" class="row-expand" title="${esc(t("expandRow"))}">▾</button>` : "";
-  row.innerHTML = `<div class="cb ${state.selected.has(it.id) ? "checked" : ""}"></div>
+  const locked = !isDeletable(it);
+  const keepTag = locked ? `<span class="tag keep">${t("tagKeep")}</span>` : "";
+  const cbClass = locked ? "cb disabled" : `cb ${state.selected.has(it.id) ? "checked" : ""}`;
+  row.innerHTML = `<div class="${cbClass}"></div>
     <div class="meta">
-      <div class="rname">${esc(it.name)}${risk}${tag}${sudo}</div>
+      <div class="rname">${esc(it.name)}${risk}${keepTag}${tag}${sudo}</div>
       ${reasonLine}
       <div class="rnote">${esc(it.note || "")}</div>
       ${pathLine}
@@ -605,12 +621,14 @@ function renderRow(it) {
       exp.title = hidden ? t("expandRow") : t("collapseRow");
     });
   }
-  row.querySelector(".cb").addEventListener("click", () => {
-    if (state.selected.has(it.id)) state.selected.delete(it.id);
-    else state.selected.add(it.id);
-    renderPanel(state.activeTab);
-    updateActionbar();
-  });
+  if (!locked) {
+    row.querySelector(".cb").addEventListener("click", () => {
+      if (state.selected.has(it.id)) state.selected.delete(it.id);
+      else state.selected.add(it.id);
+      renderPanel(state.activeTab);
+      updateActionbar();
+    });
+  }
   row.querySelector(".row-exclude").addEventListener("click", (e) => {
     e.stopPropagation();
     excludeItem(it);
@@ -620,7 +638,8 @@ function renderRow(it) {
 
 function refreshGroupCb(ghead, list) {
   const cb = ghead.querySelector(".cb");
-  const allSel = list.length && list.every((it) => state.selected.has(it.id));
+  const sel = list.filter(isDeletable);
+  const allSel = sel.length && sel.every((it) => state.selected.has(it.id));
   cb.classList.toggle("checked", allSel);
 }
 
@@ -716,10 +735,12 @@ function showResults(results) {
       const cmd = r.command
         ? `<div class="cmd"><code>${esc(r.command)}</code><button class="copy-btn" data-cmd="${esc(r.command)}">${t("copy")}</button></div>`
         : "";
+      const hint = r.hint
+        ? `<div class="rnote" style="margin-top:4px;">${esc(r.hint)}</div>` : "";
       const node = el("div", "res-row");
       node.innerHTML = `<span class="ic fail">!</span><div class="body">
         <div>${esc(r.name || r.id)} <span style="color:var(--text-faint)">— ${esc(r.error || t("failed"))}</span></div>
-        ${cmd}</div>`;
+        ${cmd}${hint}</div>`;
       body.appendChild(node);
     });
     body.querySelectorAll(".copy-btn").forEach((b) =>
