@@ -11,10 +11,11 @@ requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [{ name = "MacBroom contributors" }]
 keywords = [
-    "cleanmymac-alternative", "cleanmymac", "mac-cleaner", "macos-cleaner",
-    "appcleaner", "pearcleaner", "disk-cleanup", "disk-space",
-    "cache-cleaner", "duplicate-finder", "cleanup", "uninstaller",
-    "xcode-cleaner",
+    "cleanmymac-alternative", "cleanmymac", "cleanmymac-x", "mac-cleaner",
+    "macos-cleaner", "mac-cleanup", "appcleaner", "pearcleaner",
+    "appzapper", "mackeeper", "ccleaner", "daisydisk", "disk-drill",
+    "disk-cleanup", "disk-space", "cache-cleaner", "duplicate-finder",
+    "cleanup", "uninstaller", "xcode-cleaner",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
