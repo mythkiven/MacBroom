@@ -89,5 +89,10 @@ def is_installed(identifier: str) -> bool:
     return False
 
 
+def is_installed_bundle(identifier: str) -> bool:
+    """仅按 bundle id 精确匹配已安装 App（残留判定用，避免末段同名误关联）。"""
+    return identifier.lower() in index()["bundle_to_name"]
+
+
 def is_system(identifier: str) -> bool:
     return identifier.lower().startswith(SYSTEM_PREFIXES)

@@ -19,12 +19,7 @@
 
 </div>
 
-> 📸 **截图占位**：在此放一张主界面截图与一段 demo GIF（建议放到 `docs/` 目录后引用）。
->
-> ```markdown
-> ![MacBroom 主界面](docs/screenshot.png)
-> ![MacBroom 演示](docs/demo.gif)
-> ```
+![MacBroom 主界面](docs/screenshot.png)
 
 ---
 
@@ -41,6 +36,7 @@
 - **覆盖主流应用缓存**：除浏览器 / 开发者缓存外，还覆盖 Slack、Discord、VS Code、Microsoft Teams、Spotify、Steam 等常见应用。
 - **登录项体检**：揪出指向「已删除程序」的孤儿开机启动项（就是系统设置里报错的那些「后台项」），一键清掉。
 - **CLI / 脚本友好**：`macbroom scan --json` 直接在终端出报告，方便接入自动化与 CI。
+- **`macbroom doctor`**：扫描前预检 Python、完全磁盘访问、日志目录与端口是否就绪。
 - **权限不足不强删**：删不掉的项会列出来，并给出可复制的终端命令，由你自行执行。
 - **漂亮的 Web UI**：分组折叠、组级全选、实时统计可释放空间。
 
@@ -103,6 +99,7 @@ macbroom --no-open      # 不自动打开浏览器
 不想开界面、想接入脚本或 CI？直接在终端出报告：
 
 ```bash
+macbroom doctor                          # 预检：Python、完全磁盘访问、端口、日志目录
 macbroom scan                            # 终端打印各分类汇总与可释放总量
 macbroom scan --json                     # 输出 JSON，便于脚本 / CI 消费
 macbroom scan --lang en                  # 英文输出

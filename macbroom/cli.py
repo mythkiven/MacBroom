@@ -102,9 +102,24 @@ def main() -> None:
     p_scan.add_argument("--category", default="",
                         help="只扫描指定分类，逗号分隔，如 caches,login_items")
 
+    p_doctor = sub.add_parser("doctor", help="环境预检：Python/macOS/完全磁盘访问/端口等")
+    p_doctor.add_argument("--json", action="store_true", help="JSON 输出")
+    p_doctor.add_argument("--lang", default="zh", help="zh 或 en")
+    p_doctor.add_argument("--port", type=int, default=DEFAULT_PORT,
+                          help="待检测的 Web UI 端口（默认 37700）")
+
     args = parser.parse_args()
     if args.cmd == "scan":
         _run_scan(args)
+    elif args.cmd == "doctor":
+        from macbroom.doctor import format_report, run_checks
+        checks = run_checks(getattr(args, "port", DEFAULT_PORT))
+        if args.json:
+            print(json.dumps(checks, ensure_ascii=False, indent=2))
+        else:
+            print(format_report(checks, normalize_lang(args.lang)))
+        if not all(c["ok"] for c in checks):
+            raise SystemExit(1)
     else:
         _run_serve(args)
 

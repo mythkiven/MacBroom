@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-from macbroom.core.fsutil import HOME, dir_size, path_mtime, safe_listdir
+from macbroom.core.fsutil import HOME, dir_size, is_marked_cache_dir, path_mtime, safe_listdir
 from macbroom.core.i18n import tr
 from macbroom.core.model import ACTION_RUN, RISK_SAFE, Category, ScanItem
 from . import appindex
@@ -71,6 +71,10 @@ _APP_CACHES = [
     ("Spotify", os.path.join(_APP_SUPPORT, "Spotify", "PersistentCache")),
     ("Steam", os.path.join(_APP_SUPPORT, "Steam", "appcache")),
     ("Steam", os.path.join(_APP_SUPPORT, "Steam", "htmlcache")),
+    ("Telegram", os.path.join(HOME, "Library", "Caches", "ru.keepcoder.Telegram")),
+    ("Minecraft", os.path.join(_APP_SUPPORT, "minecraft", "logs")),
+    ("Minecraft", os.path.join(_APP_SUPPORT, "minecraft", "crash-reports")),
+    ("Minecraft", os.path.join(_APP_SUPPORT, "minecraft", "webcache")),
 ]
 
 # 这些子目录名即便在 ~/Library/Caches 下也跳过（不是普通可弃缓存）。
@@ -95,6 +99,9 @@ def scan(lang: str = "zh") -> list[ScanItem]:
                 continue
             seen_paths.add(os.path.realpath(path))
             app = appindex.app_name_for(entry)
+            note = tr(lang, "cache.app.note")
+            if is_marked_cache_dir(path):
+                note = tr(lang, "cache.cachedir_tag") + " · " + note
             items.append(ScanItem(
                 category=CATEGORY.key,
                 name=tr(lang, "cache.app.name", app=app),
@@ -102,7 +109,7 @@ def scan(lang: str = "zh") -> list[ScanItem]:
                 path=path,
                 size=size,
                 mtime=path_mtime(path),
-                note=tr(lang, "cache.app.note"),
+                note=note,
                 recommend=True,
                 risk=RISK_SAFE,
             ))

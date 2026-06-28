@@ -19,12 +19,7 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 
 </div>
 
-> 📸 **Screenshot placeholder**: drop a main-window screenshot and a demo GIF here (put them under `docs/` and reference them).
->
-> ```markdown
-> ![MacBroom main window](docs/screenshot.png)
-> ![MacBroom demo](docs/demo.gif)
-> ```
+![MacBroom main window](docs/screenshot.png)
 
 ---
 
@@ -41,6 +36,7 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 - **Covers popular apps**: beyond browser/dev caches, also Slack, Discord, VS Code, Microsoft Teams, Spotify, Steam.
 - **Login items check**: finds orphaned launch-at-login items pointing to deleted programs (the "background items" macOS warns about) and removes them.
 - **CLI / scripting friendly**: `macbroom scan --json` prints a report right in the terminal for automation and CI.
+- **`macbroom doctor`**: pre-flight checks for Python, Full Disk Access, log directory, and port availability before you scan.
 - **No forced deletion**: items that can't be removed are listed with a copy-paste Terminal command for you to run.
 - **Clean web UI**: collapsible groups, group-level select-all, live reclaimable-space totals.
 
@@ -98,6 +94,7 @@ macbroom --no-open         # don't open the browser
 ### Option C: command-line report (headless / scripting)
 
 ```bash
+macbroom doctor                # pre-flight: Python, FDA, port, log dir
 macbroom scan                                  # print per-category summary and total
 macbroom scan --json                           # JSON output for scripts / CI
 macbroom scan --category caches,login_items    # scan specific categories only

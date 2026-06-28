@@ -83,6 +83,17 @@ def human_size(num: float) -> str:
     return f"{num:.1f} PB"
 
 
+# Freedesktop 缓存目录标记（CACHEDIR.TAG）及少数工具使用的 CACHEDIR.txt。
+_CACHE_MARKERS = ("CACHEDIR.TAG", "CACHEDIR.txt")
+
+
+def is_marked_cache_dir(path: str) -> bool:
+    """目录内是否带有标准缓存标记文件。"""
+    if not path or not os.path.isdir(path):
+        return False
+    return any(os.path.isfile(os.path.join(path, name)) for name in _CACHE_MARKERS)
+
+
 def is_protected(path: str) -> bool:
     real = os.path.realpath(path)
     return any(real == p or real.startswith(p + os.sep) for p in PROTECTED_PREFIXES)

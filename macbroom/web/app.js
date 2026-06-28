@@ -13,6 +13,7 @@ const state = {
   excluded: { paths: new Set(), ids: new Set() }, // 排除清单：命中的项不扫描/不删除
   scanning: false,   // 是否正在扫描（用于取消）
   abort: null,       // 当前扫描的 AbortController
+  sortBy: "size",    // 结果排序：size | name
 };
 
 const CSRF_TOKEN = (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
@@ -76,6 +77,11 @@ const I18N = {
     copied: "已复制命令，去终端粘贴执行",
     noResults: "没有可处理的项",
     failed: "失败",
+    sortBySize: "按大小",
+    sortByName: "按名称",
+    expandRow: "展开明细",
+    collapseRow: "收起明细",
+    rowReason: "判定",
   },
   en: {
     brandTagline: "Safe, visual macOS cleanup tool",
@@ -132,6 +138,11 @@ const I18N = {
     copied: "Command copied. Paste it in Terminal when ready.",
     noResults: "No items to process",
     failed: "failed",
+    sortBySize: "By size",
+    sortByName: "By name",
+    expandRow: "Expand details",
+    collapseRow: "Collapse details",
+    rowReason: "Reason",
   },
 };
 
@@ -476,8 +487,18 @@ function renderPanel(key) {
   head.innerHTML = `<h2>${cat.icon} ${cat.title}</h2>
     <span class="desc">${cat.description}</span>
     <span class="pill">${t("itemAndSize", {count: shown.length, size: humanSize(shownSize)})}</span>
+    <span class="sort-bar">
+      <button type="button" class="sort-btn ${state.sortBy === "size" ? "active" : ""}" data-sort="size">${esc(t("sortBySize"))}</button>
+      <button type="button" class="sort-btn ${state.sortBy === "name" ? "active" : ""}" data-sort="name">${esc(t("sortByName"))}</button>
+    </span>
     <button class="panel-rescan" title="${esc(t("rescanCategory"))}">↻ ${esc(t("rescanCategory"))}</button>`;
   head.querySelector(".panel-rescan").addEventListener("click", () => rescanCategory(key));
+  head.querySelectorAll(".sort-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.sortBy = btn.dataset.sort;
+      renderPanel(key);
+    });
+  });
   p.appendChild(head);
 
   if (hiddenCount > 0) {
@@ -498,7 +519,7 @@ function renderPanel(key) {
     (a, b) => sumSize(groups[b]) - sumSize(groups[a]));
 
   groupNames.forEach((gname) => {
-    const list = groups[gname];
+    const list = sortItems(groups[gname]);
     const g = el("div", "group");
     const gsize = sumSize(list);
     const ghead = el("div", "group-head");
@@ -531,6 +552,16 @@ function renderPanel(key) {
   });
 }
 
+function sortItems(list) {
+  const copy = [...list];
+  if (state.sortBy === "name") {
+    copy.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  } else {
+    copy.sort((a, b) => (b.size || 0) - (a.size || 0));
+  }
+  return copy;
+}
+
 function renderRow(it) {
   const row = el("div", "row");
   const tag = it.action === "run" ? `<span class="tag run">${t("tagRun")}</span>`
@@ -538,13 +569,40 @@ function renderRow(it) {
   const sudo = it.needs_sudo ? `<span class="tag sudo">${t("tagSudo")}</span>` : "";
   const riskKey = it.risk === "safe" ? "riskSafe" : it.risk === "risky" ? "riskRisky" : "riskModerate";
   const risk = `<span class="tag risk-${it.risk || "moderate"}">${t(riskKey)}</span>`;
+  const reasonLine = it.reason
+    ? `<div class="rreason"><span class="rlabel">${esc(t("rowReason"))}:</span> ${esc(it.reason)}</div>` : "";
+  const pathLine = it.path ? `<div class="rpath">${esc(it.path.replace(/^.*\/Users\/[^/]+/, "~"))}</div>` : "";
+  const hasChildren = Array.isArray(it.children) && it.children.length > 0;
+  const expandBtn = hasChildren
+    ? `<button type="button" class="row-expand" title="${esc(t("expandRow"))}">▾</button>` : "";
   row.innerHTML = `<div class="cb ${state.selected.has(it.id) ? "checked" : ""}"></div>
     <div class="meta">
       <div class="rname">${esc(it.name)}${risk}${tag}${sudo}</div>
+      ${reasonLine}
       <div class="rnote">${esc(it.note || "")}</div>
+      ${pathLine}
     </div>
     <div class="rsize">${it.size ? humanSize(it.size) : "—"}</div>
+    ${expandBtn}
     <button class="row-exclude" title="${esc(t("excludeTitle"))}">${esc(t("exclude"))}</button>`;
+  if (hasChildren) {
+    const sub = el("div", "row-children hidden");
+    it.children.forEach((ch) => {
+      const cr = el("div", "row-child");
+      cr.innerHTML = `<span class="cname">${esc(ch.name)}</span>
+        <span class="cpath">${esc(ch.path || "")}</span>
+        <span class="csize">${ch.size ? humanSize(ch.size) : "—"}</span>`;
+      sub.appendChild(cr);
+    });
+    row.appendChild(sub);
+    const exp = row.querySelector(".row-expand");
+    exp.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const hidden = sub.classList.toggle("hidden");
+      exp.textContent = hidden ? "▾" : "▴";
+      exp.title = hidden ? t("expandRow") : t("collapseRow");
+    });
+  }
   row.querySelector(".cb").addEventListener("click", () => {
     if (state.selected.has(it.id)) state.selected.delete(it.id);
     else state.selected.add(it.id);
@@ -595,7 +653,7 @@ async function deleteSelected() {
     totalSize += it.size || 0;
     if (it.risk === "risky") riskyCount++;
   });
-  const ok = await showConfirm({ count: ids.length, size: totalSize, risky: riskyCount });
+  const ok = await showConfirm({ count: ids.length, size: totalSize, risky: riskyCount, ids });
   if (!ok) return;
 
   const btn = $("#delete-btn");
@@ -747,7 +805,7 @@ async function rescanCategory(key) {
   finishScan();
 }
 
-function showConfirm({ count, size, risky }) {
+function showConfirm({ count, size, risky, ids = [] }) {
   return new Promise((resolve) => {
     $("#modal-title").textContent = t("confirmTitle");
     const body = $("#modal-body");
@@ -758,6 +816,20 @@ function showConfirm({ count, size, risky }) {
     }
     if (size >= LARGE_WARN_BYTES) {
       body.appendChild(el("div", "confirm-warn", t("confirmLargeWarn")));
+    }
+    if (ids.length) {
+      const list = el("div", "confirm-list");
+      ids.forEach((id) => {
+        const it = state.itemsById[id];
+        if (!it) return;
+        const line = el("div", "confirm-item");
+        const path = it.path ? it.path.replace(/^.*\/Users\/[^/]+/, "~") : "";
+        line.innerHTML = `<strong>${esc(it.name)}</strong> · ${it.size ? humanSize(it.size) : "—"}
+          ${it.reason ? `<div class="ci-reason">${esc(it.reason)}</div>` : ""}
+          ${path ? `<div class="ci-path">${esc(path)}</div>` : ""}`;
+        list.appendChild(line);
+      });
+      body.appendChild(list);
     }
 
     const foot = $("#modal-foot");

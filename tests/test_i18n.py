@@ -133,6 +133,42 @@ class DuplicatesScannerTests(unittest.TestCase):
             self.assertEqual(it.risk, "risky")
 
 
+class FsutilTests(unittest.TestCase):
+    def test_cachedir_marker_detected(self):
+        import os
+        from macbroom.core.fsutil import is_marked_cache_dir
+
+        with TemporaryDirectory() as tmp:
+            self.assertFalse(is_marked_cache_dir(tmp))
+            with open(os.path.join(tmp, "CACHEDIR.TAG"), "w", encoding="utf-8") as f:
+                f.write("Signature: 8a477f597d28d172789f4688f9ccdfda")
+            self.assertTrue(is_marked_cache_dir(tmp))
+
+
+class AppIndexTests(unittest.TestCase):
+    def test_installed_bundle_is_stricter_than_installed(self):
+        import macbroom.scanners.appindex as appindex
+
+        appindex._cache = {
+            "bundle_to_name": {"com.example.myapp": "MyApp"},
+            "names": {"myapp"},
+        }
+        self.assertTrue(appindex.is_installed("com.example.myapp"))
+        self.assertTrue(appindex.is_installed_bundle("com.example.myapp"))
+        # 末段与 App 名相同但 bundle id 不同：宽松匹配会误判，严格不会
+        self.assertTrue(appindex.is_installed("com.other.myapp"))
+        self.assertFalse(appindex.is_installed_bundle("com.other.myapp"))
+
+
+class DoctorTests(unittest.TestCase):
+    def test_doctor_returns_expected_checks(self):
+        from macbroom.doctor import run_checks
+
+        checks = run_checks(port=37700)
+        ids = {c["id"] for c in checks}
+        self.assertEqual(ids, {"python", "macos", "full_disk_access", "log_dir", "port"})
+
+
 class AuditTests(unittest.TestCase):
     def test_audit_writes_to_overridable_dir(self):
         import json

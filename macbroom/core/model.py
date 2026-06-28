@@ -40,6 +40,8 @@ class ScanItem:
     needs_sudo: bool = False            # 是否已知需要管理员权限
     risk: str = RISK_MODERATE           # 风险等级，见 RISK_*
     mtime: float = 0.0                  # 最近修改时间（秒）
+    reason: str = ""                      # 判定理由（为何出现在结果里）
+    children: list[dict] = field(default_factory=list)  # 可展开子项 [{path, size, name}]
     id: str = field(default="")
 
     def __post_init__(self) -> None:
