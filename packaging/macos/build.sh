@@ -9,6 +9,12 @@ set -euo pipefail
 cd "$(dirname "$0")"
 ROOT="$(cd ../.. && pwd)"
 
+# 本地签名配置（含 Team ID 等敏感信息，已 .gitignore，不会进 Git）
+if [[ -f signing.local.env ]]; then
+  # shellcheck disable=SC1091
+  source signing.local.env
+fi
+
 VENV=".build-venv"
 PYTHON="${PYTHON:-python3}"
 

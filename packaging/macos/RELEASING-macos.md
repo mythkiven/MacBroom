@@ -20,9 +20,16 @@
 4. 存一份公证凭证给 `notarytool`（用 App 专用密码或 API Key）：
    ```bash
    xcrun notarytool store-credentials macbroom-notary \
-     --apple-id "you@example.com" --team-id "TEAMID" --password "app-专用密码"
+     --apple-id "you@example.com" --team-id "YOUR_TEAM_ID" --password "app-专用密码"
    ```
    这里的 `macbroom-notary` 即下文 `NOTARY_PROFILE`。
+
+**Team ID、证书全名、Apple ID 等请只写在本地**（不上传 GitHub）：
+```bash
+cp packaging/macos/signing.local.env.example packaging/macos/signing.local.env
+# 编辑 signing.local.env（已在 .gitignore）
+```
+`build.sh` 会自动读取 `signing.local.env`；`DEVELOPER_ID_APP` 留空则只打未签名 .app。
 
 查看本机可用签名身份：
 ```bash

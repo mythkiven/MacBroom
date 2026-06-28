@@ -17,3 +17,6 @@ dist/
 .build-venv/
 *.iconset/
 packaging/macos/MacBroom_1024.png
+
+# 本地签名/公证配置（含 Team ID、证书名、Apple ID 等，禁止提交）
+packaging/macos/signing.local.env
