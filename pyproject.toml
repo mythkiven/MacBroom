@@ -4,15 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macbroom"
-version = "0.1.0"
-description = "Safe, visual, zero-dependency macOS disk cleanup tool with a local web UI"
+version = "1.0.0"
+description = "Open-source macOS cleaner — free up disk space safely with a local web UI. Caches, app leftovers, large & duplicate files, dev junk."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [{ name = "MacBroom contributors" }]
-keywords = ["macos", "cleaner", "disk-cleanup", "cache", "diskspace", "uninstaller", "xcode", "developer-tools"]
+keywords = [
+    "macos", "mac", "mac-cleaner", "macos-cleaner", "cleanmymac-alternative",
+    "disk-cleanup", "disk-space", "duplicate-finder", "cache-cleaner",
+    "cleanup", "uninstaller", "xcode", "developer-tools", "open-source",
+]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Environment :: Web Environment",
     "Intended Audience :: End Users/Desktop",
@@ -31,9 +35,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/your-org/macbroom"
-Repository = "https://github.com/your-org/macbroom"
-Issues = "https://github.com/your-org/macbroom/issues"
+Homepage = "https://github.com/mythkiven/MacBroom"
+Repository = "https://github.com/mythkiven/MacBroom"
+Issues = "https://github.com/mythkiven/MacBroom/issues"
 
 [project.scripts]
 macbroom = "macbroom.cli:main"
