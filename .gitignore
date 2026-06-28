@@ -14,3 +14,6 @@ build/
 dist/
 *.egg-info/
 .eggs/
+.build-venv/
+*.iconset/
+packaging/macos/MacBroom_1024.png
