@@ -17,6 +17,12 @@ OPTIONS = {
     "argv_emulation": False,
     "packages": ["macbroom"],
     "includes": ["macbroom.desktop"],
+    # 测试扩展与 setuptools 测试树不应打进分发包（公证也会拒未签名的 _test*.so）
+    "excludes": [
+        "test", "tests", "unittest", "doctest", "setuptools.tests",
+        "_testcapi", "_testlimitedcapi", "_testbuffer", "_testimportmultiple",
+        "_testmultiphase", "_testinternalcapi",
+    ],
     "plist": {
         "CFBundleIdentifier": "com.mythkiven.MacBroom",
         "CFBundleName": "MacBroom",

@@ -37,11 +37,37 @@ APP="dist/MacBroom.app"
 [ -d "$APP" ] || { echo "未找到 $APP"; exit 1; }
 echo "==> 已生成 $APP"
 
+# 剔除 py2app 偶发带入的测试二进制与 setuptools 测试目录
+find "$APP" -type f -name '_test*.so' -delete 2>/dev/null || true
+rm -rf "$APP/Contents/Resources/lib/python3.13/setuptools/tests" 2>/dev/null || true
+
+sign_macos_app() {
+  local app="$1" identity="$2" ents="$3"
+  echo "  → 签名嵌套 .so / .dylib"
+  while IFS= read -r -d '' f; do
+    codesign --force --options runtime --timestamp --sign "$identity" "$f"
+  done < <(find "$app" -type f \( -name '*.so' -o -name '*.dylib' \) -print0)
+
+  echo "  → 签名 Mach-O 可执行文件"
+  while IFS= read -r -d '' f; do
+  if file -b "$f" 2>/dev/null | grep -q Mach-O; then
+    if [[ "$f" == *"/MacOS/"* ]]; then
+      codesign --force --options runtime --timestamp \
+        --entitlements "$ents" --sign "$identity" "$f"
+    else
+      codesign --force --options runtime --timestamp --sign "$identity" "$f"
+    fi
+  fi
+  done < <(find "$app" -type f -perm +111 -print0)
+
+  echo "  → 签名 .app 包"
+  codesign --force --options runtime --timestamp \
+    --entitlements "$ents" --sign "$identity" "$app"
+}
+
 if [[ -n "${DEVELOPER_ID_APP:-}" ]]; then
-  echo "==> codesign（hardened runtime + entitlements）"
-  codesign --force --deep --options runtime --timestamp \
-    --entitlements entitlements.plist \
-    --sign "$DEVELOPER_ID_APP" "$APP"
+  echo "==> codesign（逐文件签名，满足公证要求）"
+  sign_macos_app "$APP" "$DEVELOPER_ID_APP" entitlements.plist
   codesign --verify --strict --verbose=2 "$APP"
 
   echo "==> 打 dmg"
@@ -51,9 +77,22 @@ if [[ -n "${DEVELOPER_ID_APP:-}" ]]; then
 
   if [[ -n "${NOTARY_PROFILE:-}" ]]; then
     echo "==> 公证 + 订书"
-    xcrun notarytool submit dist/MacBroom.dmg --keychain-profile "$NOTARY_PROFILE" --wait
+    SUBMIT_LOG="$(mktemp)"
+    if ! xcrun notarytool submit dist/MacBroom.dmg \
+        --keychain-profile "$NOTARY_PROFILE" --wait 2>&1 | tee "$SUBMIT_LOG"; then
+      echo ":: 公证失败，见上方输出"
+      exit 1
+    fi
+    if grep -q "status: Invalid" "$SUBMIT_LOG"; then
+      SUB_ID="$(grep -oE 'id: [0-9a-f-]{36}' "$SUBMIT_LOG" | head -1 | cut -d' ' -f2)"
+      echo ":: 公证被拒 (Invalid)，拉取日志："
+      xcrun notarytool log "$SUB_ID" --keychain-profile "$NOTARY_PROFILE" 2>&1 | head -80
+      exit 1
+    fi
     xcrun stapler staple dist/MacBroom.dmg
     xcrun stapler staple "$APP"
+    echo "==> Gatekeeper 评估"
+    spctl -a -vvv -t install dist/MacBroom.dmg 2>&1 | tail -3 || true
   else
     echo "（跳过公证：未设 NOTARY_PROFILE）"
   fi
