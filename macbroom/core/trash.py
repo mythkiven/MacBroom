@@ -8,21 +8,34 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 
 from .fsutil import is_protected
 
+# 路径经 argv 传入，脚本内不做字符串插值，因此文件名含引号也不会破坏脚本或注入 AppleScript。
+_TRASH_SCRIPT = (
+    "on run argv\n"
+    "    set out to {}\n"
+    "    repeat with p in argv\n"
+    "        set end of out to (POSIX file (p as text))\n"
+    "    end repeat\n"
+    '    tell application "Finder" to delete out\n'
+    "end run"
+)
+
 
 def _osascript_trash(paths: list[str]) -> tuple[bool, str]:
-    """用 Finder 把一批路径移入废纸篓（支持「放回原处」）。"""
+    """用 Finder 把一批路径移入废纸篓（支持「放回原处」）。
+
+    路径作为 argv 传给 osascript，绝不插进脚本字符串——macOS 文件名允许包含 `"`，
+    插值会破坏脚本甚至被当作 AppleScript 代码执行。
+    """
     if not paths:
         return True, ""
-    # 构造 AppleScript 的 POSIX file 列表
-    items = ", ".join(f'POSIX file "{p}"' for p in paths)
-    script = f'tell application "Finder" to delete {{{items}}}'
     try:
         proc = subprocess.run(
-            ["osascript", "-e", script],
+            ["osascript", "-e", _TRASH_SCRIPT, *paths],
             capture_output=True, text=True, timeout=120,
         )
     except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
@@ -59,9 +72,9 @@ def trash_path(path: str) -> dict:
         parent = os.path.dirname(path)
         if not os.access(parent, os.W_OK):
             result["needs_sudo"] = True
-            result["command"] = f"sudo rm -rf '{path}'"
+            result["command"] = f"sudo rm -rf {shlex.quote(path)}"
     if not result["command"]:
-        result["command"] = f"rm -rf '{path}'"
+        result["command"] = f"rm -rf {shlex.quote(path)}"
     return result
 
 

@@ -119,7 +119,10 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_error(404)
         if self.headers.get(CSRF_HEADER) != CSRF_TOKEN:
             return self._send_json({"error": "missing or invalid CSRF token"}, 403)
-        length = int(self.headers.get("Content-Length", 0))
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+        except (TypeError, ValueError):
+            return self._send_json({"error": "invalid content-length"}, 400)
         try:
             payload = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:

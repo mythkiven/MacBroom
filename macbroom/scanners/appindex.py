@@ -74,21 +74,6 @@ def app_name_for(identifier: str) -> str | None:
     return identifier
 
 
-def is_installed(identifier: str) -> bool:
-    idx = index()
-    low = identifier.lower()
-    if low in idx["bundle_to_name"]:
-        return True
-    if low in idx["names"]:
-        return True
-    # 目录名是 bundle id：取末段与 App 名比对
-    if "." in identifier:
-        tail = identifier.rsplit(".", 1)[-1].lower()
-        if tail in idx["names"]:
-            return True
-    return False
-
-
 def is_installed_bundle(identifier: str) -> bool:
     """仅按 bundle id 精确匹配已安装 App（残留判定用，避免末段同名误关联）。"""
     return identifier.lower() in index()["bundle_to_name"]

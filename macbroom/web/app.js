@@ -57,6 +57,7 @@ const I18N = {
     itemAndSize: "{count} 项 · {size}",
     noItems: "🎉 没有检测到可清理项",
     scanFail: "扫描失败：{err}",
+    deleteFail: "清理失败：{err}",
     tagRun: "命令",
     tagManual: "手动",
     tagSudo: "需 sudo",
@@ -118,6 +119,7 @@ const I18N = {
     itemAndSize: "{count} items · {size}",
     noItems: "🎉 Nothing cleanable found",
     scanFail: "Scan failed: {err}",
+    deleteFail: "Cleanup failed: {err}",
     tagRun: "Command",
     tagManual: "Manual",
     tagSudo: "sudo",
@@ -659,12 +661,24 @@ async function deleteSelected() {
   const btn = $("#delete-btn");
   btn.disabled = true; btn.textContent = t("deleting");
 
-  const res = await fetch("/api/delete", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-MacBroom-Token": CSRF_TOKEN },
-    body: JSON.stringify({ ids }),
-  });
-  const out = await res.json();
+  let out = null;
+  try {
+    const res = await fetch("/api/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-MacBroom-Token": CSRF_TOKEN },
+      body: JSON.stringify({ ids }),
+    });
+    out = await res.json().catch(() => null);
+    if (!res.ok || !out || !Array.isArray(out.results)) {
+      const err = (out && out.error) || ("HTTP " + res.status);
+      throw new Error(err);
+    }
+  } catch (e) {
+    btn.textContent = t("deleteSelected");
+    btn.disabled = state.selected.size === 0;
+    toast(t("deleteFail", {err: String((e && e.message) || e)}));
+    return;
+  }
   btn.textContent = t("deleteSelected");
 
   // 处理结果：成功项移除

@@ -146,18 +146,71 @@ class FsutilTests(unittest.TestCase):
 
 
 class AppIndexTests(unittest.TestCase):
-    def test_installed_bundle_is_stricter_than_installed(self):
+    def test_installed_bundle_matches_exact_bundle_id_only(self):
         import macbroom.scanners.appindex as appindex
 
         appindex._cache = {
             "bundle_to_name": {"com.example.myapp": "MyApp"},
             "names": {"myapp"},
         }
-        self.assertTrue(appindex.is_installed("com.example.myapp"))
-        self.assertTrue(appindex.is_installed_bundle("com.example.myapp"))
-        # 末段与 App 名相同但 bundle id 不同：宽松匹配会误判，严格不会
-        self.assertTrue(appindex.is_installed("com.other.myapp"))
-        self.assertFalse(appindex.is_installed_bundle("com.other.myapp"))
+        try:
+            self.assertTrue(appindex.is_installed_bundle("com.example.myapp"))
+            self.assertTrue(appindex.is_installed_bundle("COM.Example.MyApp"))  # 大小写无关
+            # 末段与 App 名相同但 bundle id 不同：不得误判为已安装（否则残留会被漏报）
+            self.assertFalse(appindex.is_installed_bundle("com.other.myapp"))
+        finally:
+            appindex._cache = None
+
+
+class TrashTests(unittest.TestCase):
+    def test_trash_passes_paths_as_argv_without_interpolation(self):
+        import macbroom.core.trash as trash
+
+        captured = {}
+
+        class _Proc:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+
+        def fake_run(argv, *args, **kwargs):
+            captured["argv"] = argv
+            return _Proc()
+
+        # 含双引号、单引号、AppleScript 注入意图的恶意文件名
+        evil = '/tmp/x" & (do shell script "touch /tmp/pwned") & ".cache'
+        with mock.patch.object(trash.subprocess, "run", fake_run):
+            ok, err = trash._osascript_trash([evil])
+
+        self.assertTrue(ok)
+        argv = captured["argv"]
+        # 恶意路径必须作为独立 argv 参数原样传入，绝不拼进脚本字符串
+        self.assertIn(evil, argv)
+        script = argv[2]  # ["osascript", "-e", <script>, *paths]
+        self.assertNotIn(evil, script)
+        self.assertNotIn("do shell script", script)
+
+    def test_manual_fallback_command_is_shell_quoted(self):
+        import os
+        import macbroom.core.trash as trash
+
+        evil = "/tmp/macbroom-test/a b'c\"d"
+        os.makedirs(os.path.dirname(evil), exist_ok=True)
+        with open(evil, "w", encoding="utf-8") as f:
+            f.write("x")
+        try:
+            with mock.patch.object(trash, "_osascript_trash",
+                                   lambda paths: (False, "not allowed")):
+                with mock.patch.object(trash.os, "access", lambda *a, **k: False):
+                    r = trash.trash_path(evil)
+            self.assertFalse(r["ok"])
+            self.assertIn("sudo rm -rf ", r["command"])
+            # 命令必须可被 shell 安全解析回原始路径
+            import shlex
+            parts = shlex.split(r["command"])
+            self.assertEqual(parts[-1], evil)
+        finally:
+            os.remove(evil)
 
 
 class DoctorTests(unittest.TestCase):
