@@ -73,8 +73,24 @@ def _run_scan(args: argparse.Namespace) -> None:
     print("Tip: run `macbroom` for the visual UI, or add --json for machine output.")
 
 
+def _resolve_version() -> str:
+    """已安装时以包元数据（pyproject 版本）为准，源码运行回退到 __version__。"""
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+        try:
+            return version("macbroom")
+        except PackageNotFoundError:
+            pass
+    except Exception:
+        pass
+    from macbroom import __version__
+    return __version__
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="MacBroom - open-source macOS cleaner")
+    parser.add_argument("--version", action="version",
+                        version=f"macbroom {_resolve_version()}")
     parser.add_argument("--host", default=DEFAULT_HOST)
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--no-open", action="store_true", help="不自动打开浏览器")
