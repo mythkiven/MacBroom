@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macbroom"
-version = "1.1.0"
+version = "1.1.1"
 description = "Open-source macOS cleaner — free up disk space safely with a local web UI. Caches, app leftovers, large & duplicate files, dev junk."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,7 +13,7 @@ authors = [{ name = "MacBroom contributors" }]
 keywords = [
     "cleanmymac-alternative", "cleanmymac", "cleanmymac-x", "mac-cleaner",
     "macos-cleaner", "mac-cleanup", "appcleaner", "pearcleaner",
-    "appzapper", "mackeeper", "ccleaner", "daisydisk", "disk-drill",
+    "appzapper", "mackeeper", "macbooster", "ccleaner", "disk-drill",
     "disk-cleanup", "disk-space", "cache-cleaner", "duplicate-finder",
     "cleanup", "uninstaller", "xcode-cleaner",
 ]
@@ -37,7 +37,7 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/mythkiven/MacBroom"
+Homepage = "https://pypi.org/project/macbroom/"
 Repository = "https://github.com/mythkiven/MacBroom"
 Issues = "https://github.com/mythkiven/MacBroom/issues"
 
