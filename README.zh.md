@@ -3,8 +3,11 @@
 # 🧹 MacBroom
 
 **开源 macOS 清理工具 · 安全、可视化地释放磁盘空间**
+<br>**Open-source macOS cleaner — free up disk space safely**
 
 一个 **CleanMyMac 的开源替代品**：扫描可释放空间 → 按软件分组 → 勾选一键清理。所有删除默认移入「废纸篓」，可一键还原。纯本地、零依赖、不联网。
+
+> An **open-source CleanMyMac alternative**, local-only and Trash-by-default. **Full English docs: [README.md](./README.md).**
 
 [English](./README.md) · 简体中文
 
@@ -52,6 +55,21 @@
 | 🧬 **重复文件** | 内容逐字节相同的文件（大小 → 部分哈希 → 完整 SHA-256 三级收敛），每组保留最新一份 |
 | 🚀 **登录项 / 启动项** | 开机自启的 LaunchAgents / LaunchDaemons，重点揪出指向已删除程序的「孤儿」残留项 |
 | ✨ **其它可清理项** | 诊断报告、iOS 设备备份、Homebrew 残留、Docker 镜像、Time Machine 本地快照、散落的 `node_modules`、邮件附件缓存、旧 Downloads |
+
+## 💡 为什么选 MacBroom？—— 从竞品的真实事故里长出来的
+
+我们通读了**主流开源 Mac 清理工具的数百条 issue**，专门设计 MacBroom 来**避开它们已经发生过、被用户报告过的最痛事故**：
+
+| 别的清理工具出过的真实事故 | MacBroom 如何从设计上规避 |
+|---|---|
+| 把用户**整个 Chrome 配置删光**（登录态、书签全没） | 只精确清理 `Default/Cache`、`Code Cache`，**绝不**碰配置目录 |
+| 把 **shell 命令历史**（`~/.zsh_history`）当垃圾删掉 | 根本不扫、不碰 shell 历史 |
+| 清理**搞坏 iCloud 同步**（桌面 / 文档） | **自动识别 iCloud 同步目录**，标为高风险并默认隐藏 |
+| 卸载时**误判无关文件**（`~/Public`、打印机配置、别的 App 数据） | bundle-id 匹配 + 风险分级 + 可持久化的**排除清单**永久跳过误判项 |
+| **长扫描把程序卡死**，还没法中断 | 每次扫描都**可随时取消** |
+| 卸载后系统设置里残留报错的**孤儿登录项** | 专门的**登录项扫描器**，揪出指向已删除程序的启动项 |
+
+一句话：**别的工具先删了再道歉，MacBroom 从设计上就让"危险"难以发生**——默认进废纸篓、高风险默认隐藏、删除前二次确认、所有操作留审计日志。
 
 ## 🚀 使用
 

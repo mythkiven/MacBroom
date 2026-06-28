@@ -3,8 +3,11 @@
 # 🧹 MacBroom
 
 **Open-source macOS cleaner — free up disk space safely**
+<br>**开源 macOS 清理工具 — 安全、可视化地释放磁盘空间**
 
 An **open-source CleanMyMac alternative**: scan reclaimable space → group it by app → tick and clean. Deletions go to the Trash by default and can be restored. Local-only, zero-dependency, no telemetry.
+
+> 一个 **开源的 CleanMyMac 替代品**：扫描可释放空间 → 按软件分组 → 勾选一键清理。默认移入废纸篓、可还原；纯本地、零依赖、不联网。**完整中文文档见 [README.zh.md](./README.zh.md)。**
 
 [简体中文](./README.zh.md) · English
 
@@ -52,6 +55,21 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 | 🧬 **Duplicate Files** | Byte-for-byte identical files (size → partial hash → full SHA-256), keeping the newest copy per group |
 | 🚀 **Login / Startup Items** | Launch-at-login LaunchAgents / LaunchDaemons, focusing on orphaned entries pointing to deleted programs |
 | ✨ **Other Cleanup** | Diagnostic reports, iOS device backups, Homebrew leftovers, Docker images, Time Machine local snapshots, scattered `node_modules`, mail attachment caches, old downloads |
+
+## 💡 Why MacBroom? — built from real cleaner failures
+
+We read **hundreds of issues across popular open-source Mac cleaners** and designed MacBroom to *not* repeat their most painful, real, reported accidents:
+
+| Real-world failure in other cleaners | How MacBroom avoids it by design |
+|---|---|
+| A cleaner deleted a user's **entire Chrome profile** (logins, bookmarks gone) | We only target precise `Default/Cache` & `Code Cache` dirs — **never** the profile directory |
+| **Shell history wiped** (`~/.zsh_history`) as "junk" | We never scan or touch shell history |
+| Cleanup **broke iCloud sync** (Desktop/Documents) | We **detect iCloud-synced paths**, mark them risky and hide them by default |
+| App uninstall **misidentified unrelated files** (`~/Public`, printer configs, another app's data) | Bundle-id matching + risk grading + a persistent **exclusion list / allowlist** to permanently skip false positives |
+| **Long scans froze the app** with no way to stop | Every scan is **cancelable** mid-run |
+| Orphaned **login items** left erroring in System Settings after uninstalls | Dedicated **Login Items scanner** flags startup entries pointing to deleted programs |
+
+In short: **other cleaners delete first and apologize later. MacBroom is designed to be un-dangerous** — Trash-by-default, risky items hidden, dry-run confirmation, and an audit log of everything it does.
 
 ## 🚀 Usage
 
