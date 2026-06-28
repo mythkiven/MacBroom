@@ -33,6 +33,11 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 - **Confirm before delete (dry-run)**: a dialog lists the total item count and reclaimable size; large totals (>10 GB) or risky selections get an extra warning.
 - **Audit log**: every scan and deletion is written to `~/Library/Logs/MacBroom/macbroom.log` (override the directory with `MACBROOM_LOG_DIR`).
 - **Grouped by app**: caches and the like are grouped per app; your selection is preserved across rescans.
+- **Customizable**: toggle each scan category on/off; a persistent **exclusion list** for false positives; long scans are **cancelable**.
+- **iCloud-aware**: detects iCloud-synced folders to avoid breaking cross-device sync.
+- **Covers popular apps**: beyond browser/dev caches, also Slack, Discord, VS Code, Microsoft Teams, Spotify, Steam.
+- **Login items check**: finds orphaned launch-at-login items pointing to deleted programs (the "background items" macOS warns about) and removes them.
+- **CLI / scripting friendly**: `macbroom scan --json` prints a report right in the terminal for automation and CI.
 - **No forced deletion**: items that can't be removed are listed with a copy-paste Terminal command for you to run.
 - **Clean web UI**: collapsible groups, group-level select-all, live reclaimable-space totals.
 
@@ -45,6 +50,7 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 | 🐘 **Large Files** | Single files larger than 100 MB — find space-hungry videos / images / archives |
 | 🛠️ **Dev Clutter** | Build products, caches, simulators and SDK temp dirs for iOS/Xcode, Android/Android Studio, HarmonyOS/DevEco Studio |
 | 🧬 **Duplicate Files** | Byte-for-byte identical files (size → partial hash → full SHA-256), keeping the newest copy per group |
+| 🚀 **Login / Startup Items** | Launch-at-login LaunchAgents / LaunchDaemons, focusing on orphaned entries pointing to deleted programs |
 | ✨ **Other Cleanup** | Diagnostic reports, iOS device backups, Homebrew leftovers, Docker images, Time Machine local snapshots, scattered `node_modules`, mail attachment caches, old downloads |
 
 ## 🚀 Usage
@@ -69,6 +75,14 @@ The browser opens at `http://127.0.0.1:37700`. Click "Start Scan", then "Clean S
 ```bash
 macbroom --port 40000      # custom port
 macbroom --no-open         # don't open the browser
+```
+
+### Option C: command-line report (headless / scripting)
+
+```bash
+macbroom scan                                  # print per-category summary and total
+macbroom scan --json                           # JSON output for scripts / CI
+macbroom scan --category caches,login_items    # scan specific categories only
 ```
 
 ## 🛡️ Security

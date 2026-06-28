@@ -33,6 +33,11 @@
 - **删除前确认（dry-run）**：清理前弹窗列出总项数与预计释放空间，超过 10 GB 或含高风险项会额外警告，确认后才执行。
 - **操作审计日志**：每次扫描与删除都写入 `~/Library/Logs/MacBroom/macbroom.log`，可事后追溯工具到底动了什么。
 - **按软件维度展示**：缓存等按 App 分组，看得清、删得明白；重扫后保留你已勾选的项。
+- **可定制**：每个扫描类别可单独开关；支持「排除清单」把误判项永久排除；长扫描可随时取消。
+- **iCloud 友好**：自动识别 iCloud 同步目录，避免清理引发跨设备同步异常。
+- **覆盖主流应用缓存**：除浏览器 / 开发者缓存外，还覆盖 Slack、Discord、VS Code、Microsoft Teams、Spotify、Steam 等常见应用。
+- **登录项体检**：揪出指向「已删除程序」的孤儿开机启动项（就是系统设置里报错的那些「后台项」），一键清掉。
+- **CLI / 脚本友好**：`macbroom scan --json` 直接在终端出报告，方便接入自动化与 CI。
 - **权限不足不强删**：删不掉的项会列出来，并给出可复制的终端命令，由你自行执行。
 - **漂亮的 Web UI**：分组折叠、组级全选、实时统计可释放空间。
 
@@ -45,6 +50,7 @@
 | 🐘 **大文件** | 单个大于 100MB 的文件，定位占空间的视频 / 镜像 / 归档 |
 | 🛠️ **开发残留** | iOS/Xcode、Android/Android Studio、HarmonyOS/DevEco Studio 的构建产物、缓存、模拟器与 SDK 临时目录 |
 | 🧬 **重复文件** | 内容逐字节相同的文件（大小 → 部分哈希 → 完整 SHA-256 三级收敛），每组保留最新一份 |
+| 🚀 **登录项 / 启动项** | 开机自启的 LaunchAgents / LaunchDaemons，重点揪出指向已删除程序的「孤儿」残留项 |
 | ✨ **其它可清理项** | 诊断报告、iOS 设备备份、Homebrew 残留、Docker 镜像、Time Machine 本地快照、散落的 `node_modules`、邮件附件缓存、旧 Downloads |
 
 ## 🚀 使用
@@ -72,6 +78,17 @@ cd MacBroom
 ```bash
 macbroom --port 40000   # 指定端口
 macbroom --no-open      # 不自动打开浏览器
+```
+
+### 方式三：命令行报告（无界面 / 脚本友好）
+
+不想开界面、想接入脚本或 CI？直接在终端出报告：
+
+```bash
+macbroom scan                            # 终端打印各分类汇总与可释放总量
+macbroom scan --json                     # 输出 JSON，便于脚本 / CI 消费
+macbroom scan --lang en                  # 英文输出
+macbroom scan --category caches,login_items   # 只扫描指定分类
 ```
 
 ## 🛡️ 安全说明
@@ -111,6 +128,7 @@ macbroom/
     large_files.py   大文件
     ios_dev.py       iOS / Android / HarmonyOS 开发残留
     duplicates.py    重复文件（三级哈希收敛）
+    login_items.py   登录项 / 孤儿 LaunchAgents / LaunchDaemons
     system_extras.py 备份 / Docker / TM 快照 / node_modules / 邮件附件 / 旧下载
   web/               单页前端（原生 HTML/CSS/JS，无框架）
 ```
