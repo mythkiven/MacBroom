@@ -37,7 +37,7 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 - **iCloud-aware**: detects iCloud-synced folders to avoid breaking cross-device sync.
 - **Respects `CACHEDIR.TAG`**: standard cache markers are recognized so the right directories are treated as cache.
 - **Covers popular apps**: beyond browser/dev caches, also Slack, Discord, VS Code, Microsoft Teams, Spotify, Steam, Telegram, Minecraft.
-- **Login items check**: finds orphaned launch-at-login items pointing to deleted programs (the "background items" macOS warns about) and removes them.
+- **Login items check**: finds orphaned launch-at-login items pointing to deleted programs (the "background items" macOS warns about). User-level entries move to the Trash; system-level ones come with a `sudo` command for you to run yourself (never auto-elevated).
 - **CLI / scripting friendly**: `macbroom scan --json` prints a report right in the terminal for automation and CI.
 - **`macbroom doctor`**: pre-flight checks for Python, Full Disk Access, log directory, and port availability before you scan.
 - **No forced deletion**: items that can't be removed are listed with a copy-paste Terminal command for you to run.
@@ -54,6 +54,33 @@ An **open-source CleanMyMac alternative**: scan reclaimable space → group it b
 | 🧬 **Duplicate Files** | Byte-for-byte identical files (size → partial hash → full SHA-256), keeping the newest copy per group |
 | 🚀 **Login / Startup Items** | Launch-at-login LaunchAgents / LaunchDaemons, focusing on orphaned entries pointing to deleted programs |
 | ✨ **Other Cleanup** | Diagnostic reports, iOS device backups, Homebrew leftovers, Docker images, Time Machine local snapshots, scattered `node_modules`, mail attachment caches, old downloads |
+
+## 📊 How MacBroom compares
+
+A focused comparison on the things MacBroom is built for. We don't list features we don't have — if you need malware scanning, a disk treemap or a menu-bar widget, a full native app fits better.
+
+|  | **MacBroom** | CleanMyMac | Pearcleaner | Mole |
+|---|:---:|:---:|:---:|:---:|
+| **Price** | Free | $39.95/yr | Free | Free |
+| **Open source** | ✅ MIT | ❌ | ✅ Fair-code | ✅ MIT |
+| **Telemetry** | ❌ None | ⚠️ Yes | ❌ None | ❌ None |
+| **Runtime deps** | ✅ Python 3 stdlib · zero deps | Closed | Native | Native |
+| **Install** | ✅ `pip`/`pipx` one-liner | DMG | DMG / brew | brew |
+| **Interface** | Local web UI + CLI | Native app | Native app | Command line |
+| **CLI / scriptable (`--json`)** | ✅ | ❌ | ❌ | ✅ |
+| **Trash by default** | ✅ | ✅ | ✅ | ➖ |
+| **Risk grading + risky hidden** | ✅ | ➖ | ➖ | ❌ |
+| **Dry-run per-item confirm** | ✅ | ➖ | ✅ | ➖ |
+| **Audit log** | ✅ | ❌ | ➖ | ❌ |
+| **iCloud-sync aware** | ✅ | ➖ | ❌ | ❌ |
+| **Persistent exclusion list** | ✅ | ➖ | ✅ | ❌ |
+| **App cache cleanup** | ✅ | ✅ | ➖ | ✅ |
+| **Uninstall leftovers (explainable)** | ✅ exact bundle-id | ✅ | ✅ focused | ✅ |
+| **Large / duplicate files** | ✅ / ✅ | ✅ / ✅ | ❌ | ❌ |
+| **Dev clutter (Xcode/iOS/Android/HarmonyOS)** | ✅ incl. HarmonyOS | ➖ Xcode | ❌ | ➖ |
+| **Login / orphaned startup items** | ✅ | ✅ | ❌ | ➖ |
+
+> ✅ yes · ➖ partial/limited · ❌ no. MacBroom is for people who want an open-source, zero-dependency cleaner that installs with one `pip` line, is safe by default, and can be scripted into CI.
 
 ## 💡 Why MacBroom? — built from real cleaner failures
 
@@ -101,9 +128,10 @@ macbroom --no-open         # don't open the browser
 ### Option C: command-line report (headless / scripting)
 
 ```bash
-macbroom doctor                # pre-flight: Python, FDA, port, log dir
+macbroom doctor                                # pre-flight: Python, FDA, port, log dir
 macbroom scan                                  # print per-category summary and total
 macbroom scan --json                           # JSON output for scripts / CI
+macbroom scan --lang en                        # force English output
 macbroom scan --category caches,login_items    # scan specific categories only
 ```
 

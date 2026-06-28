@@ -1,7 +1,8 @@
-"""系统额外项：我补充的、你清单里没列但很值得清理的部分。
+"""系统额外项：清单里没单列、但值得清理的杂项。
 
-包含：废纸篓、诊断报告、iOS 设备备份、Homebrew 残留、Docker 镜像、
-Time Machine 本地快照、散落的 node_modules。
+包含：诊断报告 / 崩溃日志、iOS 设备备份、Homebrew 残留、Docker 镜像、
+Time Machine 本地快照、散落的 node_modules、邮件附件缓存、旧下载。
+（废纸篓不在此列：逐项移入已在废纸篓的文件无意义，而「清空废纸篓」不可逆，不做一键项。）
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ from macbroom.core.model import (ACTION_MANUAL, ACTION_RUN, RISK_MODERATE, RISK_
 CATEGORY = Category(
     key="extras",
     title="其它可清理项",
-    description="废纸篓、诊断报告、设备备份、Docker、Time Machine 快照等。",
+    description="诊断报告、设备备份、Docker、Time Machine 快照、邮件附件、旧下载等。",
     icon="✨",
 )
 
