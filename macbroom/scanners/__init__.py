@@ -21,6 +21,7 @@ _MODULES = [
     "macbroom.scanners.large_files",
     "macbroom.scanners.ios_dev",
     "macbroom.scanners.duplicates",
+    "macbroom.scanners.login_items",
     "macbroom.scanners.system_extras",
 ]
 

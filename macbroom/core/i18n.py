@@ -25,6 +25,14 @@ TRANSLATIONS = {
         "category.duplicates.description": "内容完全相同的文件，逐字节校验。删除前请确认保留哪一份。",
         "category.extras.title": "其它可清理项",
         "category.extras.description": "诊断报告、设备备份、Docker、Time Machine 快照、邮件附件、旧下载等。",
+        "category.login_items.title": "登录项 / 启动项",
+        "category.login_items.description": "开机自启的 LaunchAgents / LaunchDaemons，重点找出指向已删除程序的「孤儿」残留项。",
+
+        "login_items.group.user": "用户启动项 (~/Library/LaunchAgents)",
+        "login_items.group.global": "全局启动项（需 sudo）",
+        "login_items.orphan.name": "孤儿启动项：{label}",
+        "login_items.orphan.note": "开机自启项，但其指向的程序已不存在（{target}）——多为已卸载 App 的残留，删除可消除「后台项」报错。",
+        "login_items.orphan.note_sudo": "系统级开机自启项，指向的程序已不存在（{target}）。需管理员权限，请用下方命令自行删除。",
 
         "group.other": "其它",
         "group.browsers": "浏览器",
@@ -67,6 +75,7 @@ TRANSLATIONS = {
         "cache.browser.arc": "Arc 浏览器缓存",
         "cache.browser.firefox": "Firefox 浏览器缓存",
         "cache.browser.note": "浏览器缓存，删除后会自动重建，不影响登录与书签",
+        "cache.app_known.note": "应用缓存，删除后会自动重建，不影响账号与本地数据",
 
         "leftover.application_support": "应用支持",
         "leftover.containers": "容器",
@@ -156,6 +165,13 @@ TRANSLATIONS = {
         "category.dev_clutter.description": "Build products, caches, simulators, and old device support files for iOS, Android, and HarmonyOS.",
         "category.duplicates.title": "Duplicate Files",
         "category.duplicates.description": "Byte-for-byte identical files. Confirm which copy to keep before deleting.",
+        "category.login_items.title": "Login / Startup Items",
+        "category.login_items.description": "Launch-at-login LaunchAgents / LaunchDaemons, focusing on orphaned entries that point to deleted programs.",
+        "login_items.group.user": "User agents (~/Library/LaunchAgents)",
+        "login_items.group.global": "Global agents (needs sudo)",
+        "login_items.orphan.name": "Orphaned startup item: {label}",
+        "login_items.orphan.note": "Launches at login, but the program it points to no longer exists ({target}) — usually a leftover from an uninstalled app. Removing it clears 'background item' errors.",
+        "login_items.orphan.note_sudo": "System-level startup item pointing to a missing program ({target}). Needs admin rights; remove it yourself with the command below.",
         "category.extras.title": "Other Cleanup",
         "category.extras.description": "Diagnostic reports, device backups, Docker, Time Machine snapshots, mail attachments, old downloads, and more.",
 
@@ -200,6 +216,7 @@ TRANSLATIONS = {
         "cache.browser.arc": "Arc Browser Cache",
         "cache.browser.firefox": "Firefox Browser Cache",
         "cache.browser.note": "Browser cache; it is rebuilt automatically and does not affect logins or bookmarks",
+        "cache.app_known.note": "App cache; it is rebuilt automatically and does not affect your account or local data",
 
         "leftover.application_support": "Application Support",
         "leftover.containers": "Containers",

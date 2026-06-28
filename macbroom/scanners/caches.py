@@ -50,6 +50,29 @@ _BROWSER_CACHES = [
     ("cache.browser.firefox", os.path.join(HOME, "Library", "Caches", "Firefox")),
 ]
 
+# 常见桌面应用（多为 Electron/Chromium）的缓存目录通常藏在 Application Support 下，
+# ~/Library/Caches 的通用扫描覆盖不到，这里按应用显式补齐。只收录明确的缓存子目录，
+# 绝不触碰账号/本地数据目录。(应用名, 缓存子目录的绝对路径)
+_APP_CACHES = [
+    ("Slack", os.path.join(_APP_SUPPORT, "Slack", "Cache")),
+    ("Slack", os.path.join(_APP_SUPPORT, "Slack", "Code Cache")),
+    ("Slack", os.path.join(_APP_SUPPORT, "Slack", "GPUCache")),
+    ("Slack", os.path.join(_APP_SUPPORT, "Slack", "Service Worker", "CacheStorage")),
+    ("Discord", os.path.join(_APP_SUPPORT, "discord", "Cache")),
+    ("Discord", os.path.join(_APP_SUPPORT, "discord", "Code Cache")),
+    ("Discord", os.path.join(_APP_SUPPORT, "discord", "GPUCache")),
+    ("VS Code", os.path.join(_APP_SUPPORT, "Code", "Cache")),
+    ("VS Code", os.path.join(_APP_SUPPORT, "Code", "CachedData")),
+    ("VS Code", os.path.join(_APP_SUPPORT, "Code", "Code Cache")),
+    ("VS Code", os.path.join(_APP_SUPPORT, "Code", "GPUCache")),
+    ("Microsoft Teams", os.path.join(_APP_SUPPORT, "Microsoft", "Teams", "Cache")),
+    ("Microsoft Teams", os.path.join(_APP_SUPPORT, "Microsoft", "Teams", "Code Cache")),
+    ("Microsoft Teams", os.path.join(_APP_SUPPORT, "Microsoft", "Teams", "GPUCache")),
+    ("Spotify", os.path.join(_APP_SUPPORT, "Spotify", "PersistentCache")),
+    ("Steam", os.path.join(_APP_SUPPORT, "Steam", "appcache")),
+    ("Steam", os.path.join(_APP_SUPPORT, "Steam", "htmlcache")),
+]
+
 # 这些子目录名即便在 ~/Library/Caches 下也跳过（不是普通可弃缓存）。
 _SKIP_CACHE_NAMES = {".DS_Store"}
 
@@ -124,6 +147,28 @@ def scan(lang: str = "zh") -> list[ScanItem]:
             size=size,
             mtime=path_mtime(path),
             note=tr(lang, "cache.browser.note"),
+            recommend=True,
+            risk=RISK_SAFE,
+        ))
+
+    for app_label, path in _APP_CACHES:
+        if not os.path.isdir(path) or os.path.islink(path):
+            continue
+        real = os.path.realpath(path)
+        if real in seen_paths:
+            continue
+        size = dir_size(path)
+        if size < _MIN:
+            continue
+        seen_paths.add(real)
+        items.append(ScanItem(
+            category=CATEGORY.key,
+            name=f"{app_label} · {os.path.basename(path)}",
+            group=app_label,
+            path=path,
+            size=size,
+            mtime=path_mtime(path),
+            note=tr(lang, "cache.app_known.note"),
             recommend=True,
             risk=RISK_SAFE,
         ))
