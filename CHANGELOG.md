@@ -6,9 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-### Added
+## [1.1.2] - 2026-06-29
 
-- **In-app activity log viewer**: review recent scans and deletions inside the app (Settings → View activity log), backed by a new `/api/activity` endpoint and `audit.tail()`.
+### Fixed
+
+- **Web UI scan progress**: category-level progress bar with indeterminate animation for slow scans (e.g. duplicates) that have no real-time percentage.
+- **Web UI active tab after scan**: rescan no longer leaves the current tab blank until you switch away and back (`activateTab` after panel rebuild).
+- **macOS .app launch**: bundle missing `@rpath` dylibs (`libffi.8.dylib`, OpenSSL, zlib, etc.) that caused py2app “Launch error” on startup; `bundle_dylibs.py` runs before codesign.
+
+### Changed
+
+- `packaging/macos/build.sh`: post-py2app dylib bundling + startup smoke test; `RELEASING-macos.md` documents launch-error debugging.
 
 ## [1.1.1] - 2026-06-28
 

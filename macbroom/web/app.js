@@ -440,10 +440,38 @@ function setScanBtnIdle() {
   btn.innerHTML = `<span class="dot"></span> ${state.hasScanned ? t("rescan") : t("scanStart")}`;
 }
 
+function showScanProgress() {
+  const box = $("#scan-progress");
+  if (box) box.hidden = false;
+  const fill = $("#scan-progress-fill");
+  if (fill) fill.style.width = "0%";
+}
+
+// done：已完成类别数；current：正在扫描的序号（1 基）；title：当前类别名（null 表示收尾）。
+// title 非空时进入「不确定态」：该类正在扫描但无实时进度，轨道走流动动画表示「扫描中」。
+function setScanProgress({ done, current, total, title }) {
+  const fill = $("#scan-progress-fill");
+  if (!fill) return;
+  fill.style.width = (total ? Math.round((done / total) * 100) : 0) + "%";
+  const box = $("#scan-progress");
+  if (box) box.classList.toggle("indeterminate", title != null);
+  const label = $("#scan-progress-label");
+  const count = $("#scan-progress-count");
+  if (label) label.textContent = title ? t("loadingCategory", { title }) : t("scanning");
+  // 仅单类（如重扫）时 1/1 无意义，隐藏计数，只留「扫描中」语义。
+  if (count) count.textContent = total > 1 ? `${current} / ${total}` : "";
+}
+
+function hideScanProgress() {
+  const box = $("#scan-progress");
+  if (box) box.hidden = true;
+}
+
 function finishScan() {
   state.scanning = false;
   state.abort = null;
   setScanBtnIdle();
+  hideScanProgress();
   updateGrandTotal();
 }
 
@@ -475,12 +503,22 @@ async function scanAll() {
     p.innerHTML = `<div class="loading"><div class="spinner"></div>${t("loadingCategory", {title: c.title})}</div>`;
     panels.appendChild(p);
   });
-  if (!state.activeTab || !state.enabled.has(state.activeTab)) activateTab(cats[0].key);
+  // 面板被整体重建，active 类已丢失：必须重新激活当前 tab，否则停留的面板会空白
+  // （切到别的 tab 再切回来才有数据的根因）。当前 tab 不可用时回退到第一个。
+  const activeKey = (state.activeTab && state.enabled.has(state.activeTab)) ? state.activeTab : cats[0].key;
+  activateTab(activeKey);
 
+  const total = cats.length;
+  showScanProgress();
+  let done = 0;
   for (const c of cats) {
     if (!state.scanning) break;  // 用户中途取消
+    // 进入该类的「扫描中」不确定态：实心填充表示已完成的 done 类，轨道流动表示当前类在扫。
+    setScanProgress({ done, current: done + 1, total, title: c.title });
     await scanCategory(c.key);
+    done += 1;
   }
+  setScanProgress({ done, current: total, total, title: null });
   finishScan();
 }
 
@@ -927,7 +965,10 @@ async function rescanCategory(key) {
   state.scanning = true;
   state.abort = new AbortController();
   setScanBtnScanning();
+  showScanProgress();
+  setScanProgress({ done: 0, current: 1, total: 1, title: cat ? cat.title : key });
   await scanCategory(key);
+  setScanProgress({ done: 1, current: 1, total: 1, title: null });
   finishScan();
 }
 

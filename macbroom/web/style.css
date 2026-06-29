@@ -257,6 +257,38 @@ body {
 .spinner { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ===== scan progress ===== */
+.scan-progress {
+  margin: 0 0 18px; padding: 14px 16px; border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), .08), rgba(var(--accent2-rgb), .05));
+  border: 1px solid rgba(var(--accent-rgb), .25); animation: fade .3s var(--ease);
+}
+.scan-progress[hidden] { display: none; }
+.scan-progress-info { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.scan-progress-label { font-size: 13.5px; color: var(--text); font-weight: 600; }
+.scan-progress-count { font-size: 12.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.scan-progress-track { position: relative; height: 7px; border-radius: 99px; background: rgba(255, 255, 255, .06); overflow: hidden; }
+.scan-progress-fill {
+  position: absolute; inset: 0 auto 0 0; width: 0; z-index: 1;
+  border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), .5); transition: width .35s var(--ease);
+}
+.scan-progress-fill::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent);
+  animation: scan-shimmer 1.2s linear infinite;
+}
+@keyframes scan-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+/* 不确定态：某个类别正在扫描、无法细分进度时，流动光段铺过整条轨道表示「扫描中」，
+   不会卡在固定宽度看着像卡死；已完成类别的实心填充仍在上层显示真实进度。 */
+.scan-progress.indeterminate .scan-progress-track::before {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 38%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), .65), transparent);
+  animation: scan-indet 1.1s ease-in-out infinite;
+}
+@keyframes scan-indet { from { left: -38%; } to { left: 100%; } }
+
 /* ===== empty state ===== */
 .empty-state { text-align: center; padding: 80px 20px; color: var(--text-dim); animation: fade .4s var(--ease); }
 .empty-illo { font-size: 60px; margin-bottom: 14px; filter: drop-shadow(0 8px 24px rgba(var(--accent-rgb), .35)); animation: float 3.5s ease-in-out infinite; }

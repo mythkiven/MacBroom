@@ -92,8 +92,13 @@ python packaging/macos/make_icns.py <source.png> packaging/macos/MacBroom.icns
   「系统设置 › 隐私与安全性 › 完全磁盘访问」授予，无法自动化。首启可引导（`doctor.py` 已有检测逻辑）。
 - **hardened runtime entitlements**：`entitlements.plist` 放行了嵌入 Python runtime 所需的
   `allow-jit` / `allow-unsigned-executable-memory` / `disable-library-validation`；公证若因此被拒需复核。
-- **`--deep` 签名**：当前脚本用 `--deep` 一次性签整包，对 py2app 简单结构可用；若公证报某个嵌套
-  dylib/framework 未签名，改为由内而外逐个签再签外层。
+- **`--deep` 签名**：已改为由内而外逐文件签名（见 `sign_macos_app`），满足公证对嵌套 Mach-O 的要求。
 - **端口**：原生壳用系统动态端口（`bind 0`），不与 CLI 版固定端口 37700 冲突。
 - **入口脚本命名**：py2app 入口是 `macbroom_app.py`，**不可**改名为 `MacBroom.py`——
   在大小写不敏感文件系统上会与包 `macbroom` 同名冲突，导致整个包被覆盖、web 资源丢失。
+- **Launch error（py2app 弹窗）**：双击报 *See the py2app website for debugging launch issues* 时，
+  在终端跑 `dist/MacBroom.app/Contents/MacOS/MacBroom` 看 traceback。常见原因是 conda/Homebrew Python
+  的 `_ctypes.so` 依赖 `@rpath/libffi.8.dylib` 等，py2app 未自动打进 bundle。`build.sh` 会在签名前
+  调用 `bundle_dylibs.py` 从构建 venv 的 `sys.base_prefix/lib` 补齐；若仍失败见
+  [py2app debugging](https://py2app.readthedocs.io/en/latest/debugging.html)。
+- **签名**：`build.sh` 已改为逐文件签 `.so`/`.dylib`/Mach-O，再签 `.app` 外层（不用 `--deep`）。

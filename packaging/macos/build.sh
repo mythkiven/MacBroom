@@ -41,6 +41,32 @@ echo "==> 已生成 $APP"
 find "$APP" -type f -name '_test*.so' -delete 2>/dev/null || true
 rm -rf "$APP/Contents/Resources/lib/python3.13/setuptools/tests" 2>/dev/null || true
 
+echo "==> 补全 Python @rpath 依赖（libffi 等，否则双击即 Launch error）"
+python bundle_dylibs.py "$APP"
+
+echo "==> 冒烟：确认 __boot__ / ctypes 可加载（避免 py2app Launch error）"
+SMOKE_LOG="$(mktemp)"
+(
+  "$APP/Contents/MacOS/MacBroom" 2>&1 &
+  pid=$!
+  sleep 2
+  if ! kill -0 "$pid" 2>/dev/null; then
+    wait "$pid" || true
+    exit 1
+  fi
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+) &>"$SMOKE_LOG" || {
+  echo ":: 启动冒烟失败："
+  cat "$SMOKE_LOG"
+  exit 1
+}
+if grep -qi "launch error" "$SMOKE_LOG"; then
+  echo ":: 启动冒烟失败："
+  cat "$SMOKE_LOG"
+  exit 1
+fi
+
 sign_macos_app() {
   local app="$1" identity="$2" ents="$3"
   echo "  → 签名嵌套 .so / .dylib"

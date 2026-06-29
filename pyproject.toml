@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macbroom"
-version = "1.1.1"
+version = "1.1.2"
 description = "Open-source macOS cleaner — free up disk space safely with a local web UI. Caches, app leftovers, large & duplicate files, dev junk."
 readme = "README.md"
 requires-python = ">=3.9"
